@@ -1,4 +1,4 @@
-update=Monday, 20 February 2017 'pmt' 23:58:42
+update=Tue 21 Feb 2017 15:54:24 GMT
 version=1
 last_client=kicad
 [pcbnew]
@@ -61,3 +61,4 @@ LibName29=valves
 LibName30=agg-kicad/lib/ic/logic/npic6c596a
 LibName31=agg-kicad/lib/ic/power/tps62152
 LibName32=sa40-19
+LibName33=/home/dwt27/git/bigtime/board/agg-kicad/lib/misc/part
