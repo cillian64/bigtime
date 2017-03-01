@@ -40,7 +40,7 @@ EELAYER 26 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
-Sheet 1 1
+Sheet 1 2
 Title ""
 Date ""
 Rev ""
@@ -740,27 +740,10 @@ Text Notes 7800 4300 0    60   ~ 0
 1.25V
 Text Notes 8750 3500 0    60   ~ 0
 160mA nominal
-$Comp
-L RJ45_LEDS J?
-U 1 1 58B75F47
-P 1400 3600
-F 0 "J?" V 2017 3600 50  0000 C CNN
-F 1 "RJ45_LEDS" V 1926 3600 50  0000 C CNN
-F 2 "" H -1250 800 50  0001 C CNN
-F 3 "" H -1250 800 50  0001 C CNN
-	1    1400 3600
-	0    -1   -1   0   
-$EndComp
-$Comp
-L 749010012A T?
-U 1 1 58B76848
-P 2600 3650
-F 0 "T?" H 2600 4375 50  0000 C CNN
-F 1 "749010012A" H 2600 4284 50  0000 C CNN
-F 2 "agg:749010012A" H -750 -300 50  0001 L CNN
-F 3 "http://katalog.we-online.de/pbs/datasheet/749010012A.pdf" H -750 -400 50  0001 L CNN
-F 4 "2422552" H -750 -500 50  0001 L CNN "Farnell"
-	1    2600 3650
-	1    0    0    -1  
-$EndComp
+$Sheet
+S 4150 3400 850  1400
+U 58B736A9
+F0 "ethernet" 60
+F1 "ethernet.sch" 60
+$EndSheet
 $EndSCHEMATC
