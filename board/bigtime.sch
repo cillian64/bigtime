@@ -1,4 +1,5 @@
 EESchema Schematic File Version 2
+LIBS:bigtime-rescue
 LIBS:power
 LIBS:device
 LIBS:transistors
@@ -28,9 +29,12 @@ LIBS:opto
 LIBS:atmel
 LIBS:contrib
 LIBS:valves
+LIBS:npic6c596a
+LIBS:tps62152
 LIBS:sa40-19
 LIBS:part
 LIBS:749010012a
+LIBS:ksz8081rnx
 LIBS:bigtime-cache
 EELAYER 26 0
 EELAYER END
@@ -120,16 +124,12 @@ $EndComp
 Wire Wire Line
 	3550 1000 3550 1150
 Wire Wire Line
-	3000 1150 3550 1150
-Wire Wire Line
-	3550 1150 3900 1150
+	3000 1150 3900 1150
 Connection ~ 3550 1150
 Wire Wire Line
 	3250 700  3250 1050
 Wire Wire Line
-	3000 1050 3250 1050
-Wire Wire Line
-	3250 1050 3900 1050
+	3000 1050 3900 1050
 Connection ~ 3250 1050
 $Comp
 L CONN_01X06 P1
@@ -154,7 +154,7 @@ F 3 "" H 1000 100 50  0000 C CNN
 	1    0    0    1   
 $EndComp
 $Comp
-L TPS62152 IC2
+L TPS62152-RESCUE-bigtime IC2
 U 1 1 58AB6DDC
 P 7000 1650
 F 0 "IC2" H 7000 2475 50  0000 C CNN
@@ -179,15 +179,9 @@ $EndComp
 Wire Wire Line
 	6000 950  6000 1050
 Wire Wire Line
-	6000 1050 6500 1050
+	6000 1050 6600 1050
 Wire Wire Line
-	6500 1050 6600 1050
-Wire Wire Line
-	6500 1050 6500 1150
-Wire Wire Line
-	6500 1150 6500 1250
-Wire Wire Line
-	6500 1250 6500 1350
+	6500 1050 6500 1350
 Wire Wire Line
 	6500 1150 6600 1150
 Connection ~ 6500 1050
@@ -235,17 +229,7 @@ $EndComp
 Wire Wire Line
 	6500 2250 6600 2250
 Wire Wire Line
-	6500 1750 6500 1850
-Wire Wire Line
-	6500 1850 6500 1950
-Wire Wire Line
-	6500 1950 6500 2050
-Wire Wire Line
-	6500 2050 6500 2150
-Wire Wire Line
-	6500 2150 6500 2250
-Wire Wire Line
-	6500 2250 6500 2350
+	6500 1750 6500 2350
 Wire Wire Line
 	6600 2150 6500 2150
 Connection ~ 6500 2250
@@ -264,9 +248,7 @@ Connection ~ 6500 1850
 Wire Wire Line
 	7400 1450 7500 1450
 Wire Wire Line
-	7500 1450 7500 1650
-Wire Wire Line
-	7500 1650 7500 1850
+	7500 1450 7500 1850
 $Comp
 L GND #PWR9
 U 1 1 58AB72DE
@@ -293,23 +275,15 @@ $EndComp
 Wire Wire Line
 	7500 1250 7400 1250
 Wire Wire Line
-	7500 1050 7500 1150
+	7500 1050 7500 1250
 Wire Wire Line
-	7500 1150 7500 1250
-Wire Wire Line
-	7400 1050 7500 1050
-Wire Wire Line
-	7500 1050 7550 1050
+	7400 1050 7550 1050
 Connection ~ 7500 1050
 Wire Wire Line
 	7400 1150 7500 1150
 Connection ~ 7500 1150
 Wire Wire Line
-	8050 1050 8150 1050
-Wire Wire Line
-	8150 1050 8350 1050
-Wire Wire Line
-	8350 1050 8700 1050
+	8050 1050 8700 1050
 Wire Wire Line
 	8150 1050 8150 1550
 Wire Wire Line
@@ -364,9 +338,7 @@ F 4 "2496853" H 6400 1550 60  0001 C CNN "Farnell"
 	0    1    1    0   
 $EndComp
 Wire Wire Line
-	6000 1350 6000 1550
-Wire Wire Line
-	6000 1550 6000 1600
+	6000 1350 6000 1600
 Wire Wire Line
 	6250 1550 6000 1550
 Connection ~ 6000 1550
@@ -387,9 +359,7 @@ F 3 "" H 2150 -200 50  0000 C CNN
 	-1   0    0    1   
 $EndComp
 Wire Wire Line
-	6650 5150 6950 5150
-Wire Wire Line
-	6950 5150 7100 5150
+	6650 5150 7100 5150
 $Comp
 L GND #PWR13
 U 1 1 58AB81EC
@@ -407,9 +377,7 @@ Wire Wire Line
 Wire Wire Line
 	6900 4850 6900 5050
 Wire Wire Line
-	6900 5050 7050 5050
-Wire Wire Line
-	7050 5050 7100 5050
+	6900 5050 7100 5050
 $Comp
 L +3V3 #PWR12
 U 1 1 58AB83D7
@@ -649,17 +617,11 @@ F 3 "" H -750 -350 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 Wire Wire Line
-	7350 3550 7350 3600
-Wire Wire Line
-	7350 3600 7350 3650
+	7350 3550 7350 3650
 Wire Wire Line
 	7350 3600 7400 3600
 Wire Wire Line
-	8200 3600 8250 3600
-Wire Wire Line
-	8250 3600 8550 3600
-Wire Wire Line
-	8550 3600 8900 3600
+	8200 3600 8900 3600
 Wire Wire Line
 	8900 4750 8950 4750
 Wire Wire Line
@@ -728,7 +690,7 @@ Wire Wire Line
 	8550 3700 8550 3600
 Connection ~ 8550 3600
 $Comp
-L POT RV?
+L POT-RESCUE-bigtime RV?
 U 1 1 58B7266E
 P 8550 4200
 F 0 "RV?" H 8480 4154 50  0000 R CNN
@@ -769,9 +731,7 @@ Wire Wire Line
 Wire Wire Line
 	7800 4200 7800 4100
 Wire Wire Line
-	8900 3600 8900 4750
-Wire Wire Line
-	8900 4750 8900 4850
+	8900 3600 8900 4850
 Text Label 8900 3600 0    60   ~ 0
 V_LED_BUS
 Text Label 3250 700  0    60   ~ 0
