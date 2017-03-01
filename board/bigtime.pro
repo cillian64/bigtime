@@ -1,4 +1,4 @@
-update=Tue 21 Feb 2017 15:54:24 GMT
+update=Wed 01 Mar 2017 15:56:57 GMT
 version=1
 last_client=kicad
 [pcbnew]
@@ -62,3 +62,5 @@ LibName30=agg-kicad/lib/ic/logic/npic6c596a
 LibName31=agg-kicad/lib/ic/power/tps62152
 LibName32=sa40-19
 LibName33=/home/dwt27/git/bigtime/board/agg-kicad/lib/misc/part
+LibName34=/home/dwt27/git/bigtime/board/parts/749010012a
+LibName35=/home/dwt27/git/bigtime/board/agg-kicad/lib/ic/interface/ksz8081rnx
