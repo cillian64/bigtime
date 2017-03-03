@@ -1,4 +1,4 @@
-update=Wednesday, 01 March 2017 'pmt' 20:45:28
+update=Friday, 03 March 2017 'pmt' 21:49:28
 version=1
 last_client=kicad
 [pcbnew]
@@ -65,3 +65,5 @@ LibName33=sa40-19
 LibName34=agg-kicad/lib/misc/part
 LibName35=parts/749010012a
 LibName36=agg-kicad/lib/ic/interface/ksz8081rnx
+LibName37=agg-kicad/lib/ic/interface/max5969x
+LibName38=agg-kicad/lib/ic/power/max17503
