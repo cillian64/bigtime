@@ -1,4 +1,4 @@
-update=Friday, 03 March 2017 'pmt' 21:49:28
+update=Monday, 06 March 2017 'pmt' 17:56:46
 version=1
 last_client=kicad
 [pcbnew]
@@ -67,3 +67,8 @@ LibName35=parts/749010012a
 LibName36=agg-kicad/lib/ic/interface/ksz8081rnx
 LibName37=agg-kicad/lib/ic/interface/max5969x
 LibName38=agg-kicad/lib/ic/power/max17503
+LibName39=agg-kicad/lib/ic/microcontroller/stm32f4xxvxtx
+LibName40=agg-kicad/lib/passive/smd_xtal
+LibName41=agg-kicad/lib/connector/swd
+LibName42=agg-kicad/lib/connector/swd_tc
+LibName43=agg-kicad/lib/ic/memory/25aa02e48
