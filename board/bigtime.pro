@@ -1,4 +1,4 @@
-update=Monday, 06 March 2017 'pmt' 17:56:46
+update=Fri 24 Mar 2017 18:21:03 GMT
 version=1
 last_client=kicad
 [pcbnew]
@@ -72,3 +72,4 @@ LibName40=agg-kicad/lib/passive/smd_xtal
 LibName41=agg-kicad/lib/connector/swd
 LibName42=agg-kicad/lib/connector/swd_tc
 LibName43=agg-kicad/lib/ic/memory/25aa02e48
+LibName44=agg-kicad/lib/connector/microusb
