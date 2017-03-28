@@ -1,4 +1,4 @@
-update=Monday, 27 March 2017 'pmt' 20:55:54
+update=Tue 28 Mar 2017 16:13:51 BST
 version=1
 last_client=kicad
 [pcbnew]
@@ -73,3 +73,4 @@ LibName41=agg-kicad/lib/connector/swd
 LibName42=agg-kicad/lib/connector/swd_tc
 LibName43=agg-kicad/lib/ic/memory/25aa02e48
 LibName44=agg-kicad/lib/connector/microusb
+LibName45=agg-kicad/lib/ic/power/ldl212dr
