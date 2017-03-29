@@ -109,11 +109,11 @@ Text Label 8100 6050 2    60   ~ 0
 SHCP
 Text Label 8100 6150 2    60   ~ 0
 STCP
-Text Label 4250 4650 0    60   ~ 0
+Text Label 2550 6350 2    60   ~ 0
 DS_IN
-Text Label 4250 4750 0    60   ~ 0
+Text Label 2550 6150 2    60   ~ 0
 SHCP
-Text Label 4250 4850 0    60   ~ 0
+Text Label 2550 6250 2    60   ~ 0
 STCP
 $Comp
 L +3V3 #PWR14
@@ -1667,4 +1667,16 @@ F 3 "" H 8350 1800 50  0001 C CNN
 	1    8350 1800
 	1    0    0    -1  
 $EndComp
+Text Notes 2700 1150 0    60   ~ 0
+VDD
+Text Notes 3000 1150 0    60   ~ 0
+VDD
+Text Notes 3300 1150 0    60   ~ 0
+VDD
+Text Notes 3600 1150 0    60   ~ 0
+VDD
+Text Notes 3900 1150 0    60   ~ 0
+VDD
+Text Notes 4200 1150 0    60   ~ 0
+VDD
 $EndSCHEMATC
