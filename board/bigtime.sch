@@ -1689,21 +1689,21 @@ Text Label 9750 4900 2    60   ~ 0
 LED_G
 Text Label 9550 5000 2    60   ~ 0
 LED_DP
-Text Label 9150 5600 0    60   ~ 0
-LED_B
-Text Label 9150 5500 0    60   ~ 0
-LED_A
-Text Label 9150 5400 0    60   ~ 0
-LED_F
-Text Label 9150 5300 0    60   ~ 0
-LED_G
 Text Label 9150 6000 0    60   ~ 0
-LED_E
+LED_B
 Text Label 9150 5900 0    60   ~ 0
-LED_D
+LED_A
 Text Label 9150 5800 0    60   ~ 0
-LED_C
+LED_F
 Text Label 9150 5700 0    60   ~ 0
+LED_G
+Text Label 9150 5600 0    60   ~ 0
+LED_E
+Text Label 9150 5500 0    60   ~ 0
+LED_D
+Text Label 9150 5400 0    60   ~ 0
+LED_C
+Text Label 9150 5300 0    60   ~ 0
 LED_DP
 NoConn ~ 3750 1550
 NoConn ~ 3750 1750
