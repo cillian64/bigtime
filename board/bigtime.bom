@@ -1,0 +1,78 @@
+Bill Of Materials
+=================
+
+Source file: bigtime.xml
+Date: 2017-03-31T17:42:15.581554
+
+Parts Missing Footprints
+------------------------
+
+
+Parts Missing Order Codes
+-------------------------
+R29    10k             agg:0603
+R19    10k             agg:0603
+R30    33              agg:0603
+R11    33              agg:0603
+R12    33              agg:0603
+R13    33              agg:0603
+R14    33              agg:0603
+R31    33              agg:0603
+R20    75              agg:0603
+R21    75              agg:0603
+R22    75              agg:0603
+R23    75              agg:0603
+R16    1k              agg:0603
+R15    1k              agg:0603
+R17    6k49            agg:0603
+R25    24k9            agg:0603
+R26    619             agg:0603
+R18    48k             agg:0603
+
+Y2     25MHz           agg:XTAL-50x32
+L2     FB              agg:0603
+D2     1N4148          agg:SOD-323
+D3     SS110B          agg:DO-214AA-SMB
+D8     SS110B          agg:DO-214AA-SMB
+D4     SS110B          agg:DO-214AA-SMB
+D9     SS110B          agg:DO-214AA-SMB
+D5     SS110B          agg:DO-214AA-SMB
+D10    SS110B          agg:DO-214AA-SMB
+D6     SS110B          agg:DO-214AA-SMB
+D11    SS110B          agg:DO-214AA-SMB
+D7     SMAJ58A         agg:DO-214AC-SMA
+
+
+  Farnell
+  ~~~~~~~
+1860592,1,1x RJHSE-538B RJHSE538X
+2422552,1,1x 749010012A 749010012A
+1865686,1,1x 3u3 ELLATP3R3NB
+2382918,1,1x TPS62152 QFN-16-EP-TI
+1568023,1,1x MICROUSB MICROUSB_MOLEX_475
+2579024,1,1x 2u2 60V 1210
+2509802,1,1x KSZ8081RNx QFN-24-EP-MICREL
+2514229,1,1x MAX17503 QFN-20-EP-MAX
+2670652,1,1x 160k 0603
+2502428,2,2x 2M 0603
+2496853,1,1x 3.3n 0603
+8735662,1,1x 3.9V SOD-323
+2303318,1,1x 866k 0603
+2502402,1,1x 110k 0603
+9355049,1,1x 100k 3386P
+2514586,1,1x MAX5969x DFN-10-EP-MAX
+1700995,1,1x 25AA02E48 SOT-23-6
+2445196,1,1x NPIC6C596A TSSOP-16
+1828955,4,4x 10n 200V 0805
+2064367,1,1x STM32F407VET6 LQFP-100
+2455834,1,1x 26M XTAL-20x16
+2630956,1,1x LDL212DR SOIC-8
+2494232,3,3x 22u 0603
+1735526,2,2x 2u2 0603
+2494230,1,1x 10u 0603
+2080056,1,1x SA40-19SURKWA SA40-18
+2496941,1,1x 100n 60V 0805
+9233407,8,8x 1500 0603
+1929699,1,1x 22u SRR1260A
+2543271,1,1x 2u2 L2520
+2101347,1,1x 32.768k XTAL_1206
