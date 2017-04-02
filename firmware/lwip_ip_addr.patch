@@ -1,0 +1,11 @@
+--- ext/lwip/src/include/ipv4/lwip/ip_addr.h	2014-06-18 17:56:46.000000000 +0100
++++ ext/lwip_fixed/src/include/ipv4/lwip/ip_addr.h	2016-11-12 22:01:37.236279380 +0000
+@@ -197,7 +197,7 @@
+                                               (mask)->addr))
+ #define ip_addr_cmp(addr1, addr2) ((addr1)->addr == (addr2)->addr)
+ 
+-#define ip_addr_isany(addr1) ((addr1) == NULL || (addr1)->addr == IPADDR_ANY)
++#define ip_addr_isany(addr1) ((void*)(addr1) == NULL || (addr1)->addr == IPADDR_ANY)
+ 
+ #define ip_addr_isbroadcast(ipaddr, netif) ip4_addr_isbroadcast((ipaddr)->addr, (netif))
+ u8_t ip4_addr_isbroadcast(u32_t addr, const struct netif *netif);

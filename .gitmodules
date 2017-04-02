@@ -1,3 +1,6 @@
 [submodule "board/agg-kicad"]
 	path = board/agg-kicad
 	url = https://github.com/adamgreig/agg-kicad.git
+[submodule "firmware/ChibiOS"]
+	path = firmware/ChibiOS
+	url = https://github.com/ChibiOS/ChibiOS.git

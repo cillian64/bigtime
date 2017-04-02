@@ -50,11 +50,11 @@ EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
 Sheet 2 2
-Title ""
-Date ""
-Rev ""
-Comp ""
-Comment1 ""
+Title "Bigtime"
+Date "2017-04-02"
+Rev "1"
+Comp "Drawn by: DWT"
+Comment1 "Checked by: DWT"
 Comment2 ""
 Comment3 ""
 Comment4 ""

@@ -1,0 +1,35 @@
+name: Bigtime
+lsefreq: 32768
+hsefreq: 26000000
+voltage: 3.3
+mcutype: STM32F407xx
+default: input, pushpull, starthigh, pullup, highspeed
+pins:
+    SWDIO: pa13, af0, pulldown
+    SWCLK: pa14, af0, pulldown
+
+    RMII_REF_CLK: pa1, af11
+    RMII_MDIO: pa2, af11
+    RMII_CRS_DV: pa7, af11
+    RMII_TX_EN: pb11, af11
+    RMII_TXD0: pb12, af11
+    RMII_TXD1: pb13, af11
+    RMII_MDC: pc1, af11
+    RMII_RXD0: pc4, af11
+    RMII_RXD1: pc5, af11
+
+    # SPI3
+    ROM_CS: pa15, output, starthigh
+    ROM_SCK: pc10, af6
+    ROM_MISO: pc11, af6
+    ROM_MOSI: pc12, af6
+
+    # OTG_FS
+    USB_VBUS: pa9, input, pulldown
+    USB_DM: pa11, af10
+    USB_DP: pa12, af10
+
+    # SPI1
+    SHCP: pb3, af5
+    DS: pb5, af5
+    STCP: pb4, startlow, output
