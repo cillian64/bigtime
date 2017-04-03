@@ -24,8 +24,8 @@ The STM32F4 RTC peripheral's date-time will hold the current time in UTC:
 A configuration store will hold network settings (DHCP or
 IP+network+gateway+DNS), NTP settings (A list of NTP servers and a time-of-day
 to sync the time), display settings (12 or 24 hour time, flashing second
-marker, whether to display sync status), timezone, and whether daylight savings
-should be automatically applied:
+marker, whether to display sync status), what display is attached, timezone,
+and whether daylight savings should be automatically applied:
 * Network
     * DHCP enable (bool)
     * Static IP address (uint32_t consisting 4 octets)
@@ -42,6 +42,8 @@ should be automatically applied:
     * 24-hour time (bool)
     * Flashing second indicator (bool)
     * Display sync status (bool)
+    * Has seconds display (bool)
+    * Has milliseconds display (bool)
     * Timezone (int16_t holding an adjustment in 24 hour time, e.g. 0000 for
       London, 545 for Nepal, -1000 for Hawaii).
     * Automatic BST adjustment (bool)
