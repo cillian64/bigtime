@@ -47,25 +47,31 @@ should be automatically applied:
     * Automatic DST adjustment (bool)
 
 A state structure will hold whether the current time is considered
-synchronised or free-running and whether/when any NTP servers have sent a "Kiss
-of Death" (KoD) and should be avoided.
+synchronised or free-running and when any NTP servers have sent a "Kiss
+of Death" (KoD) and which type it was.  Knowing the time and type of KoD we can
+work out whether we should currently be avoiding that server.
 * Synchronised (bool)
-* NTP server 1 KoD (bool)
-* NTP server 2 KoD (bool)
-* NTP server 3 KoD (bool)
+* NTP server 1 KoD type (int)
+* NTP server 1 KoD time-date (time-date)
+* NTP server 2 KoD type (int)
+* NTP server 2 KoD time-date (time-date)
+* NTP server 3 KoD type (int)
+* NTP server 3 KoD time-date (time-date)
 
 ### Threads
 The display thread will retrieve the time from the RTC, the sync status from
 the state structure, and the display settings from the configuration structure.
-It will then drive the LED shift registers.
+It will then drive the LED shift registers.  It will display the current time,
+the seconds indicator if enabled, and the sync indicator if enabled and
+currently unsynchronised.
 
 The NTP thread will handle time synchronisation.  It will run through each NTP
 server in the list and attempt to retrieve the time.  Upon a receive timeout it
 will retry the same server several times.  Upon a network failure or KoD
 response, it will proceed to the next server in the list.  If the final server
-on the list fails, the NTP thread will return to the first.  If all servers are
-being avoided due to KoD, the NTP thread will wait until a server becomes
-available again.  After a successful synchronisation it will set the
+on the list fails, the NTP thread will return to the first server.  If all
+servers are being avoided due to KoD, the NTP thread will wait until a server
+becomes available again.  After a successful synchronisation it will set the
 "synchronised" flag to True and update the RTC peripheral's time-date.  It will
 then sleep until the next synchronisation time.  At that time it will set the
 synchronised flag to false and attempt synchronisation.
