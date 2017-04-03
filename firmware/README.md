@@ -44,7 +44,7 @@ should be automatically applied:
     * Display sync status (bool)
     * Timezone (int16_t holding an adjustment in 24 hour time, e.g. 0000 for
       London, 545 for Nepal, -1000 for Hawaii).
-    * Automatic DST adjustment (bool)
+    * Automatic BST adjustment (bool)
 
 A state structure will hold whether the current time is considered
 synchronised or free-running and when any NTP servers have sent a "Kiss
