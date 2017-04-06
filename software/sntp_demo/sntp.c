@@ -6,9 +6,11 @@
 #include <stdint.h>
 #include <time.h>
 
-const char* ntp_host = "ntp1.leontp.com";
+//const char* ntp_host = "ntp1.leontp.com";
 //const char* ntp_host = "pool.ntp.org";
-const int ntp_port = 123;
+const char* ntp_host = "ntp1d.cl.cam.ac.uk";
+const int dst_ntp_port = 123;
+const int src_ntp_port = 1337;
 
 #define NTP_FLAG_LEAP_MASK      0xc0 // 0b11000000
 #define NTP_FLAG_LEAP_SHIFT     6
@@ -118,7 +120,7 @@ uint64_t do_sntp(void)
     tx.receive_timestamp = (uint64_t)(86400U * (365U * 70U + 17U)) << 32;
     tx.transmit_timestamp = (uint64_t)(86400U * (365U * 70U + 17U)) << 32;
 
-    ntp_exchange(ntp_host, ntp_port, &tx, &rx);
+    ntp_exchange(ntp_host, dst_ntp_port, &tx, &rx);
 
     if(rx.stratum == 0)
     {
@@ -155,13 +157,13 @@ void ntp_exchange(const char* host, int port, struct ntp_packet *tx,
     memset(&dst_addr, 0, sizeof(dst_addr));
     dst_addr.sin_family = AF_INET;
     memcpy(&dst_addr.sin_addr.s_addr, resolv->h_addr, resolv->h_length);
-    dst_addr.sin_port = htons(ntp_port);
+    dst_addr.sin_port = htons(port);
 
     // Build the source adddress
     memset(&src_addr, 0, sizeof(src_addr));
     src_addr.sin_family = AF_INET;
     src_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    src_addr.sin_port = htons(ntp_port);
+    src_addr.sin_port = htons(src_ntp_port);
 
     printf("Sending packet:\n");
     print_ntp_packet(tx);
