@@ -47,8 +47,8 @@ time_t ntp_to_unix(uint32_t ntp_timestamp)
 
 void print_ntp_timestamp(uint32_t ntp_timestamp)
 {
-    time_t unix = ntp_to_unix(ntp_timestamp);
-    puts(ctime(&unix));
+    time_t unixtime = ntp_to_unix(ntp_timestamp);
+    puts(ctime(&unixtime));
 }
 
 
@@ -182,8 +182,8 @@ int main()
     ntp_time = do_sntp();
 
     printf("On the third stroke, the time will be %u.\n", ntp_time);
-    time_t unix = ntp_to_unix(ntp_time);
-    printf("ctime: %s\n", ctime(&unix));
+    time_t unixtime = ntp_to_unix(ntp_time);
+    printf("ctime: %s\n", ctime(&unixtime));
 
     return 0;
 }
