@@ -6,6 +6,29 @@
 #include <stdint.h>
 #include <time.h>
 
+// Danger Will Robinson!
+// htobe64 and be64toh don't exist everywhere.
+#define IS_BIG_ENDIAN (*(uint16_t *)"\0\xff" < 0x100)
+uint64_t hton64(uint64_t in)
+{
+    uint64_t out = 0;
+    if(IS_BIG_ENDIAN)
+        return in;
+    out |= (uint64_t)htonl(in & 0xffffffff) << 32;
+    out |= htonl(in >> 32);
+    return out;
+}
+uint64_t ntoh64(uint64_t in)
+{
+    uint64_t out = 0;
+    if(IS_BIG_ENDIAN)
+        return in;
+    out |= (uint64_t)htonl(in & 0xffffffff) << 32;
+    out |= htonl(in >> 32);
+    return out;
+}
+
+
 //const char* ntp_host = "ntp1.leontp.com";
 //const char* ntp_host = "pool.ntp.org";
 const char* ntp_host = "ntp1d.cl.cam.ac.uk";
@@ -82,10 +105,10 @@ void hton_ntp(struct ntp_packet *packet)
     packet->root_delay = htonl(packet->root_delay);
     packet->root_dispersion = htonl(packet->root_dispersion);
     packet->reference_id = htonl(packet->reference_id);
-    packet->reference_timestamp = htobe64(packet->reference_timestamp);
-    packet->origin_timestamp = htobe64(packet->origin_timestamp);
-    packet->receive_timestamp = htobe64(packet->receive_timestamp);
-    packet->transmit_timestamp = htobe64(packet->transmit_timestamp);
+    packet->reference_timestamp = hton64(packet->reference_timestamp);
+    packet->origin_timestamp = hton64(packet->origin_timestamp);
+    packet->receive_timestamp = hton64(packet->receive_timestamp);
+    packet->transmit_timestamp = hton64(packet->transmit_timestamp);
 }
 
 void ntoh_ntp(struct ntp_packet *packet)
@@ -93,10 +116,10 @@ void ntoh_ntp(struct ntp_packet *packet)
     packet->root_delay = ntohl(packet->root_delay);
     packet->root_dispersion = ntohl(packet->root_dispersion);
     packet->reference_id = ntohl(packet->reference_id);
-    packet->reference_timestamp = be64toh(packet->reference_timestamp);
-    packet->origin_timestamp = be64toh(packet->origin_timestamp);
-    packet->receive_timestamp = be64toh(packet->receive_timestamp);
-    packet->transmit_timestamp = be64toh(packet->transmit_timestamp);
+    packet->reference_timestamp = ntoh64(packet->reference_timestamp);
+    packet->origin_timestamp = ntoh64(packet->origin_timestamp);
+    packet->receive_timestamp = ntoh64(packet->receive_timestamp);
+    packet->transmit_timestamp = ntoh64(packet->transmit_timestamp);
 }
 
 // Returns NTP timestamp.
@@ -207,7 +230,7 @@ int main()
 
     ntp_time = do_sntp();
 
-    printf("On the third stroke, the time will be %lu.\n", ntp_time);
+    printf("On the third stroke, the time will be %llu.\n", ntp_time);
     time_t unixtime = ntp_to_unix(ntp_time);
     printf("ctime: %s\n", ctime(&unixtime));
 
