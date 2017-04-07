@@ -1,10 +1,7 @@
-all: sntp
+all: test_sntp
 
-sntp: sntp.c
-	gcc -o sntp -Wall -Wpedantic -g sntp.c
-
-test: sntp
-	./sntp
+test_sntp: sntp.c test_sntp.c
+	gcc -o test_sntp -Wall -Wpedantic sntp.c test_sntp.c
 
 clean:
-	rm -fv sntp
+	rm -fv test_sntp

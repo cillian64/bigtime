@@ -4,7 +4,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <stdint.h>
-#include <time.h>
+#include "sntp.h"
 
 // Danger Will Robinson!
 // htobe64 and be64toh don't exist everywhere.
@@ -28,10 +28,6 @@ uint64_t ntoh64(uint64_t in)
     return out;
 }
 
-
-//const char* ntp_host = "ntp1.leontp.com";
-//const char* ntp_host = "pool.ntp.org";
-const char* ntp_host = "ntp1d.cl.cam.ac.uk";
 const int dst_ntp_port = 123;
 const int src_ntp_port = 1337;
 
@@ -58,48 +54,12 @@ struct ntp_packet {
     uint64_t transmit_timestamp;
 };
 
-uint64_t do_sntp(void);
-void ntp_exchange(const char* host, int port, struct ntp_packet *tx,
-                  struct ntp_packet *rx);
-
 void error(char *msg) {
     perror(msg);
     exit(1);
 }
 
-time_t ntp_to_unix(uint64_t ntp_timestamp)
-{
-    const uint32_t unix_epoch_in_ntp = 2208988800u;
-    return (ntp_timestamp >> 32) - unix_epoch_in_ntp;
-}
-
-void print_ntp_timestamp(uint64_t ntp_timestamp)
-{
-    time_t unixtime = ntp_to_unix(ntp_timestamp);
-    printf("%s", ctime(&unixtime));
-}
-
-
-void print_ntp_packet(struct ntp_packet *packet)
-{
-    printf("Leap indicator: %u\n",
-        (packet->flags & NTP_FLAG_LEAP_MASK) >> NTP_FLAG_LEAP_SHIFT);
-    printf("NTP version: %u\n",
-        (packet->flags & NTP_FLAG_VERSION_MASK) >> NTP_FLAG_VERSION_SHIFT);
-    printf("NTP mode: %u\n",
-        (packet->flags & NTP_FLAG_MODE_MASK) >> NTP_FLAG_MODE_SHIFT);
-    printf("Stratum: %u\n", packet->stratum);
-    printf("Poll interval: %u\n", packet->poll_interval);
-    printf("Precision: %i\n", packet->precision);
-    printf("Root delay: %u\n", packet->root_delay);
-    printf("Root dispersion: %u\n", packet->root_dispersion);
-    printf("Reference ID: %u\n", packet->reference_id);
-    print_ntp_timestamp(packet->reference_timestamp);
-    print_ntp_timestamp(packet->origin_timestamp);
-    print_ntp_timestamp(packet->receive_timestamp);
-    print_ntp_timestamp(packet->transmit_timestamp);
-}
-
+// Convert NTP packet from host to network endian-ness
 void hton_ntp(struct ntp_packet *packet)
 {
     packet->root_delay = htonl(packet->root_delay);
@@ -111,6 +71,7 @@ void hton_ntp(struct ntp_packet *packet)
     packet->transmit_timestamp = hton64(packet->transmit_timestamp);
 }
 
+// Convert NTP packet from network to host endian-ness
 void ntoh_ntp(struct ntp_packet *packet)
 {
     packet->root_delay = ntohl(packet->root_delay);
@@ -122,8 +83,68 @@ void ntoh_ntp(struct ntp_packet *packet)
     packet->transmit_timestamp = ntoh64(packet->transmit_timestamp);
 }
 
-// Returns NTP timestamp.
-uint64_t do_sntp(void)
+// Send the packet `tx' to the NTP server, then receive packet `rx'
+void ntp_exchange(const char* host, int port, struct ntp_packet *tx,
+                  struct ntp_packet *rx)
+{
+    int sockfd, result;
+    struct sockaddr_in dst_addr, src_addr;
+    struct hostent *resolv;
+    socklen_t dst_len;
+
+    // Open the socket
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (sockfd < 0) 
+        error("ERROR opening socket");
+
+    // Resolve the server hostname
+    resolv = gethostbyname(host);
+    if (resolv == NULL) {
+        fprintf(stderr,"ERROR, no such host as '%s'\n", host);
+        exit(1);
+    }
+
+    // Build the destination address
+    memset(&dst_addr, 0, sizeof(dst_addr));
+    dst_addr.sin_family = AF_INET;
+    memcpy(&dst_addr.sin_addr.s_addr, resolv->h_addr, resolv->h_length);
+    dst_addr.sin_port = htons(port);
+
+    // Build the source adddress
+    memset(&src_addr, 0, sizeof(src_addr));
+    src_addr.sin_family = AF_INET;
+    src_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    src_addr.sin_port = htons(src_ntp_port);
+
+    // Packet to network endian-ness
+    hton_ntp(tx);
+
+    // Bind to socket
+    if(bind(sockfd, (struct sockaddr*)&src_addr, sizeof(src_addr)) < 0)
+    {
+        error("ERROR in bind");
+        exit(1);
+    }
+
+    // Send the message to the server
+    result = sendto(sockfd, tx, sizeof(struct ntp_packet), 0,
+                    (struct sockaddr *)&dst_addr, sizeof(dst_addr));
+    if (result < 0)
+      error("ERROR in sendto");
+
+    dst_len = (socklen_t)sizeof(dst_addr);
+    result = recvfrom(sockfd, rx, sizeof(struct ntp_packet), 0,
+                      (struct sockaddr *)&dst_addr,
+                      &dst_len);
+
+    // Packet to machine endian-ness
+    ntoh_ntp(rx);
+
+    if (result < 0) 
+      error("ERROR in recvfrom");
+}
+
+int get_ntp_timestamp(char *ntp_host, uint64_t *timestamp)
 {
     struct ntp_packet tx, rx;
 
@@ -145,96 +166,19 @@ uint64_t do_sntp(void)
 
     ntp_exchange(ntp_host, dst_ntp_port, &tx, &rx);
 
+    // Detect kiss-of-death packets
     if(rx.stratum == 0)
     {
-        // Kiss of Death style packet!
         char *kod = (char*)&rx.reference_id;
-        fprintf(stderr, "KoD received: %c%c%c%c", kod[0], kod[1], kod[2],
-                kod[3]);
+        if((memcmp(kod, "DENY", 4) == 0) ||
+           (memcmp(kod, "RSTR", 4) == 0))
+            return SNTP_KOD_DENY;
+        if(memcmp(kod, "RATE", 4) == 0)
+            return SNTP_KOD_RATE;
+        return SNTP_KOD_OTHER;
     }
 
-    return rx.transmit_timestamp;
+    *timestamp = rx.transmit_timestamp;
+    return SNTP_SUCCESS;
 }
-
-void ntp_exchange(const char* host, int port, struct ntp_packet *tx,
-                  struct ntp_packet *rx)
-{
-    int sockfd, result;
-    struct sockaddr_in dst_addr, src_addr;
-    struct hostent *resolv;
-    socklen_t dst_len;
-
-    // Open the socket
-    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-    if (sockfd < 0) 
-        error("ERROR opening socket");
-
-    // Resolve the server hostname
-    resolv = gethostbyname(ntp_host);
-    if (resolv == NULL) {
-        fprintf(stderr,"ERROR, no such host as '%s'\n", ntp_host);
-        exit(1);
-    }
-
-    // Build the destination address
-    memset(&dst_addr, 0, sizeof(dst_addr));
-    dst_addr.sin_family = AF_INET;
-    memcpy(&dst_addr.sin_addr.s_addr, resolv->h_addr, resolv->h_length);
-    dst_addr.sin_port = htons(port);
-
-    // Build the source adddress
-    memset(&src_addr, 0, sizeof(src_addr));
-    src_addr.sin_family = AF_INET;
-    src_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    src_addr.sin_port = htons(src_ntp_port);
-
-    printf("Sending packet:\n");
-    print_ntp_packet(tx);
-
-    // Packet to network endian-ness
-    hton_ntp(tx);
-
-    // Bind to socket
-    if(bind(sockfd, (struct sockaddr*)&src_addr, sizeof(src_addr)) < 0)
-    {
-        error("ERROR in bind");
-        exit(1);
-    }
-
-    // Send the message to the server
-    result = sendto(sockfd, tx, sizeof(struct ntp_packet), 0,
-                    (struct sockaddr *)&dst_addr, sizeof(dst_addr));
-    if (result < 0)
-      error("ERROR in sendto");
-
-    printf("Trying to receive...\n");
-    dst_len = (socklen_t)sizeof(dst_addr);
-    result = recvfrom(sockfd, rx, sizeof(struct ntp_packet), 0,
-                      (struct sockaddr *)&dst_addr,
-                      &dst_len);
-
-    // Packet to machine endian-ness
-    ntoh_ntp(rx);
-
-    printf("Packet received:\n");
-    print_ntp_packet(rx);
-
-    if (result < 0) 
-      error("ERROR in recvfrom");
-}
-
-int main()
-{
-    uint64_t ntp_time;
-    printf("would you look at the time?\n");
-
-    ntp_time = do_sntp();
-
-    printf("On the third stroke, the time will be %llu.\n", ntp_time);
-    time_t unixtime = ntp_to_unix(ntp_time);
-    printf("ctime: %s\n", ctime(&unixtime));
-
-    return 0;
-}
-
 
