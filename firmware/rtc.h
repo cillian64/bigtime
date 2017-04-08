@@ -19,7 +19,7 @@ void rtc_get_bcd(struct BCDTime *bcdTime);
 int32_t rtc_delta(RTCDateTime *rtcBegin, RTCDateTime *rtcEnd);
 
 // Convert an NTP timestamp (in UTC) to an RTCDateTime in London time (GMT or
-// BST).
+// BST) including sub-second precision.
 void rtc_from_ntp(RTCDateTime *rtcOut, uint64_t ntpIn);
 
 #endif
