@@ -1,20 +1,3 @@
-/*
-    ChibiOS - Copyright (C) 2006..2016 Giovanni Di Sirio
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
-*/
-
-#include <stdio.h>
 #include <string.h>
 
 #include "ch.h"
@@ -31,6 +14,9 @@
 #include "lwip/api.h"
 
 #include "rom.h"
+#include "display.h"
+#include "rtc.h"
+#include "sntp.h"
 
 
 int main(void) {
@@ -57,9 +43,24 @@ int main(void) {
     /* Initialise lwIP using the new MAC address */
     lwipInit(&lwipopts);
 
-    /* Main thread is done now and can sleep forever. */
-    chThdSleep(TIME_INFINITE);
+    while(1)
+    {
+        uint64_t ntpDateTime;
+        int result = get_ntp_timestamp("pool.ntp.org", &ntpDateTime);
+        if(result == SNTP_SUCCESS)
+        {
+            RTCDateTime rtcDateTime;
+            rtc_from_ntp(&rtcDateTime, ntpDateTime);
+            rtc_set(&rtcDateTime);
+        }
+        struct BCDTime bcdTime;
+        rtc_get_bcd(&bcdTime);
+        display_time(&bcdTime, false);
+    }
 
-    /* In case idle thread is disabled */
-    while(1);
+//  /* Main thread is done now and can sleep forever. */
+//    chThdSleep(TIME_INFINITE);
+//
+//    /* In case idle thread is disabled */
+//    while(1);
 }

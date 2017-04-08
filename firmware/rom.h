@@ -1,5 +1,5 @@
-#ifndef PORTFIRE_ROM_H
-#define PORTFIRE_ROM_H
+#ifndef ROM_H
+#define ROM_H
 
 #include <stdint.h>
 

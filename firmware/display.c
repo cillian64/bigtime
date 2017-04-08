@@ -1,5 +1,11 @@
 #include "display.h"
 #include "hal.h"
+#include "rtc.h"
+
+// Set the 7-segment digits. Each byte is packed as
+// Bit      7 6 5 4 3 2 1 0
+// Segment DP A B C D E F G
+void display_set(uint8_t *digits, uint8_t ndigits);
 
 static SPIDriver* display_spid = &SPID1;
 static SPIConfig display_spi_cfg = {
@@ -21,21 +27,31 @@ static uint8_t display_font[10] = {
     0b01110000,  // 7
     0b01111111,  // 8
     0b01111011,  // 9
-}
+};
 
 void display_init(void)
 {
     spiStart(display_spid, &display_spi_cfg);
+    uint8_t digits[6] = {0};
+    display_set(digits, 6);
 }
 
-void display_bcd(uint8_t *digits, bool *dps, uint8_t ndigits)
+void display_time(struct BCDTime *bcdTime, bool has_seconds)
 {
-    for(int i=0; i<ndigits; i++)
-    {
-        digits[i] = display_font[digits[i]];
-        digits[i] |= dps[i] << 7;
-    }
-    display_set(digits, ndigits);
+    uint8_t digits[6];
+    digits[5] = display_font[bcdTime->ht];
+    digits[4] = display_font[bcdTime->hu];
+    digits[3] = display_font[bcdTime->mnt];
+    digits[2] = display_font[bcdTime->mnu];
+    digits[1] = display_font[bcdTime->st];
+    digits[0] = display_font[bcdTime->su];
+
+    // Set DP in the middle:
+    bcdTime->hu |= 0b10000000;
+    if(has_seconds)
+        display_set(digits, 6);
+    else
+        display_set(digits+2, 4);
 }
 
 void display_set(uint8_t *digits, uint8_t ndigits)
@@ -53,7 +69,7 @@ void display_set(uint8_t *digits, uint8_t ndigits)
         tx_buf |= (digits[i] & 0b00000100) << 1;
         tx_buf |= (digits[i] & 0b00000010) << 4;
         tx_buf |= (digits[i] & 0b00000001) << 4;
-        spiSend(display_spid, 1, txbuf);
+        spiSend(display_spid, 1, &tx_buf);
     }
     spiUnselect(display_spid);
 }
