@@ -97,6 +97,13 @@ void ntp_exchange(const char* host, int port, struct ntp_packet *tx,
     if (sockfd < 0) 
         error("ERROR opening socket");
 
+    // Set a 1 second timeout
+    struct timeval rcv_timeo;
+    rcv_timeo.tv_sec = 1;
+    rcv_timeo.tv_usec = 0;
+    setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &rcv_timeo,
+            sizeof(rcv_timeo));
+
     // Resolve the server hostname
     resolv = gethostbyname(host);
     if (resolv == NULL) {
@@ -140,8 +147,8 @@ void ntp_exchange(const char* host, int port, struct ntp_packet *tx,
     // Packet to machine endian-ness
     ntoh_ntp(rx);
 
-    if (result < 0) 
-      error("ERROR in recvfrom");
+    if (result < 0)
+        error("ERROR in recvfrom (probably timeout)");
 }
 
 int get_ntp_timestamp(char *ntp_host, uint64_t *timestamp)
