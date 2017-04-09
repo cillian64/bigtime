@@ -20,45 +20,36 @@ The STM32F4 RTC peripheral's date-time will hold the current time in UTC:
 * Hour (BCD)
 * Minute (BCD)
 * Second (BCD)
+* Sub-second
 
-A configuration store will hold network settings (DHCP or
-IP+network+gateway+DNS), NTP settings (A list of NTP servers and a time-of-day
-to sync the time), display settings (12 or 24 hour time, flashing second
-marker, whether to display sync status), what display is attached, timezone,
-and whether daylight savings should be automatically applied:
+Other state is held in RAM:
+* Time of last sync             (datetime)
+* NTP server 1 status           (int)
+* NTP server 1 query time       (datetime)
+* NTP server 2 status           (int)
+* NTP server 2 query time       (datetime)
+* NTP server 3 status           (int)
+* NTP server 3 query time       (datetime)
+
+Non-volatile storage will be used to hold configuration:
 * Network
-    * DHCP enable (bool)
-    * Static IP address (uint32_t consisting 4 octets)
-    * Network mask (uint32_t consisting 4 octets)
-    * Gateway IP address (uint32_t consisting 4 octets)
-    * DNS server 1 (uint32_t consisting 4 octets)
-    * DNS server 2 (uint32_t consisting 4 octets)
+    * DHCP enable               (bool)
+    * IP address                (uint32_t IP address)
+    * Network mask              (uint32_t IP address)
+    * Gateway IP address        (uint32_t IP address)
+    * DNS server 1              (uint32_t IP address)
+    * DNS server 2              (uint32_t IP address)
 * NTP
-    * NTP server 1 (String: hostname or IP address)
-    * NTP server 2 (String: hostname or IP address)
-    * NTP server 3 (String: hostname or IP address)
-    * Time-of-day to synchronise (uint16_t holding a 24-hour time)
+    * NTP server 1              (string)
+    * NTP server 2              (string)
+    * NTP server 3              (string)
+    * Synchronisation interval  (uint16_t in minutes)
 * Time and Display
-    * 24-hour time (bool)
     * Flashing second indicator (bool)
-    * Display sync status (bool)
-    * Has seconds display (bool)
-    * Has milliseconds display (bool)
-    * Timezone (int16_t holding an adjustment in 24 hour time, e.g. 0000 for
-      London, 545 for Nepal, -1000 for Hawaii).
-    * Automatic BST adjustment (bool)
+    * Display sync status       (bool)
+    * Has seconds display       (bool)
+    * Automatic BST adjustment  (bool)
 
-A state structure will hold whether the current time is considered
-synchronised or free-running and when any NTP servers have sent a "Kiss
-of Death" (KoD) and which type it was.  Knowing the time and type of KoD we can
-work out whether we should currently be avoiding that server.
-* Synchronised (bool)
-* NTP server 1 KoD type (int)
-* NTP server 1 KoD time-date (time-date)
-* NTP server 2 KoD type (int)
-* NTP server 2 KoD time-date (time-date)
-* NTP server 3 KoD type (int)
-* NTP server 3 KoD time-date (time-date)
 
 ### Threads
 The display thread will retrieve the time from the RTC, the sync status from
@@ -73,15 +64,13 @@ will retry the same server several times.  Upon a network failure or KoD
 response, it will proceed to the next server in the list.  If the final server
 on the list fails, the NTP thread will return to the first server.  If all
 servers are being avoided due to KoD, the NTP thread will wait until a server
-becomes available again.  After a successful synchronisation it will set the
-"synchronised" flag to True and update the RTC peripheral's time-date.  It will
-then sleep until the next synchronisation time.  At that time it will set the
-synchronised flag to false and attempt synchronisation.
+becomes available again.  After a successful synchronisation it will update the
+RTC peripheral and store the time of synchronisation.  It then waits until the
+synchronisation interval has passed.
 
 ## Time anomalies
 ### Timezones
-The RTC peripheral holds the time in UTC, as given by NTP.  Each time this is
-read, the timezone adjustment is applied
+Only London time (GMT/BST) is supported currently.
 
 ### Daylight Savings adjustments
 DST is applied using the rules for British Summer Time.  BST begins at 0100 UTC

@@ -13,6 +13,7 @@
 
 #include "shell.h"
 #include "usbshell.h"
+#include "config.h"
 
 /*===========================================================================*/
 /* Shell commands.                                                           */

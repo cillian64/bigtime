@@ -106,7 +106,7 @@ BOARDSRC=board.c
 BOARDINC=.
 
 # Define linker script file here
-LDSCRIPT= STM32F407xG.ld
+LDSCRIPT= STM32F407xE.ld
 
 # C sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
@@ -122,7 +122,7 @@ CSRC = $(STARTUPSRC) \
        $(STREAMSSRC) \
        $(SHELLSRC) \
        $(CHIBIOS)/os/various/evtimer.c \
-       rom.c display.c rtc.c sntp.c usb.c usbshell.c main.c
+       rom.c display.c rtc.c sntp.c usb.c usbshell.c config.c main.c
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.

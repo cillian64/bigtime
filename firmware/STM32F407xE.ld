@@ -15,12 +15,13 @@
 */
 
 /*
- * STM32F407xG memory setup.
+ * STM32F407xE memory setup
+ * Last 128k sector reserved for configuration
  * Note: Use of ram1 and ram2 is mutually exclusive with use of ram0.
  */
 MEMORY
 {
-    flash0  : org = 0x08000000, len = 1M
+    flash0  : org = 0x08000000, len = 384k
     flash1  : org = 0x00000000, len = 0
     flash2  : org = 0x00000000, len = 0
     flash3  : org = 0x00000000, len = 0
