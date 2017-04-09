@@ -80,9 +80,9 @@ static void cmd_load(BaseSequentialStream *chp, int argc, char *argv[]) {
     (void)argc;
     (void)argv;
     if(config_load())
-        chprintf(chp, "Config loaded successfully.");
+        chprintf(chp, "Config loaded successfully.\r\n");
     else
-        chprintf(chp, "Config invalid or missing.");
+        chprintf(chp, "Config invalid or missing.\r\n");
 }
 
 // save command: Save config in memory to flash
@@ -90,7 +90,23 @@ static void cmd_save(BaseSequentialStream *chp, int argc, char *argv[]) {
     (void)argc;
     (void)argv;
     config_save();
-    chprintf(chp, "Config saved.");
+    chprintf(chp, "Config saved.\r\n");
+}
+
+// netinfo command: Display networking details from DHCP
+static void cmd_netinfo(BaseSequentialStream *chp, int argc, char *argv[]) {
+    (void)argc;
+    (void)argv;
+    chprintf(chp, "Not implemented.\r\n");
+    // TODO
+}
+
+// status: Show current system status (ie print state struct)
+static void cmd_status(BaseSequentialStream *chp, int argc, char *argv[]) {
+    (void)argc;
+    (void)argv;
+    chprintf(chp, "Not implemented.\r\n");
+    // TODO
 }
 
 // show command: Display current config (in memory)
@@ -187,6 +203,8 @@ static const ShellCommand commands[] = {
     {"save", cmd_save},
     {"show", cmd_show},
     {"set", cmd_set},
+    {"netinfo", cmd_netinfo},
+    {"status", cmd_status},
     {NULL, NULL}
 };
 
