@@ -110,10 +110,11 @@ void config_save(void)
                 sizeof(bigtime_config));
 }
 
-void config_load(void)
+bool config_load(void)
 {
     bool crc = flash_read(FLASH_CFG_ADDR, (uint32_t*)&bigtime_config,
                           sizeof(bigtime_config));
     if(!crc)
         memset(&bigtime_config, 0, sizeof(bigtime_config));
+    return crc;
 }
