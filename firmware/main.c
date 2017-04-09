@@ -17,7 +17,9 @@
 #include "display.h"
 #include "rtc.h"
 #include "sntp.h"
+#include "usb.h"
 
+static THD_WORKING_AREA(waUsbSer, 0x100);
 
 int main(void) {
     /* Set up our IP details */
@@ -42,6 +44,10 @@ int main(void) {
 
     /* Initialise lwIP using the new MAC address */
     lwipInit(&lwipopts);
+
+    // Start USB config shell
+    chThdCreateStatic(waUsbSer, sizeof(waUsbSer), NORMALPRIO, UsbSerThread,
+                      NULL);
 
     while(1)
     {

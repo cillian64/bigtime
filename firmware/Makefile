@@ -122,7 +122,7 @@ CSRC = $(STARTUPSRC) \
        $(STREAMSSRC) \
        $(SHELLSRC) \
        $(CHIBIOS)/os/various/evtimer.c \
-       rom.c display.c rtc.c sntp.c main.c
+       rom.c display.c rtc.c sntp.c usb.c usbshell.c main.c
 
 # C++ sources that can be compiled in ARM or THUMB mode depending on the global
 # setting.
@@ -206,8 +206,8 @@ CPPWARN = -Wall -Wextra -Wundef
 #
 
 # List all user C define here, like -D_DEBUG=1
-GITVERSION := $(shell git describe --abbrev=8 --always)
-UDEFS = -DFIRMWARE_VERSION=\"$(GITVERSION)\"
+GITVERSION := $(shell git describe --abbrev=8 --always --dirty)
+UDEFS = -DFW_VERSION=\"$(GITVERSION)\"
 
 # Define ASM defines here
 UADEFS =
