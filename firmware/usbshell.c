@@ -16,6 +16,9 @@
 #include "usbshell.h"
 #include "config.h"
 
+#include <lwip/netif.h>
+#include <lwip/dns.h>
+
 /*===========================================================================*/
 /* Shell commands.                                                           */
 /*===========================================================================*/
@@ -109,8 +112,13 @@ static void cmd_netinfo(BaseSequentialStream *chp, int argc, char *argv[]) {
         chprintf(chp, "Usage: netinfo\r\n");
         return;
     }
-    chprintf(chp, "Not implemented.\r\n");
-    // TODO
+    struct netif *myif = netif_default;
+    ip_addr_t dns1 = dns_getserver(0), dns2 = dns_getserver(1);
+    chprintf(chp, "IP address..... %s\r\n", ipaddr_ntoa(&myif->ip_addr));
+    chprintf(chp, "Network mask... %s\r\n", ipaddr_ntoa(&myif->netmask));
+    chprintf(chp, "Gateway........ %s\r\n", ipaddr_ntoa(&myif->gw));
+    chprintf(chp, "DNS server 1... %s\r\n", ipaddr_ntoa(&dns1));
+    chprintf(chp, "DNS server 2... %s\r\n", ipaddr_ntoa(&dns2));
 }
 
 // status: Show current system status (ie print state struct)
@@ -131,8 +139,7 @@ static void cmd_reboot(BaseSequentialStream *chp, int argc, char *argv[]) {
         chprintf(chp, "Usage: reboot\r\n");
         return;
     }
-    chprintf(chp, "Not implemented.\r\n");
-    // TODO
+    NVIC_SystemReset();
 }
 
 // show command: Display current config (in memory)
