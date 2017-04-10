@@ -189,14 +189,49 @@ static bool is_bst(uint64_t ntpDateTime)
 
     // The UK observes BST from 0100 UTC on the last Sunday of March
     // until 0100 UTC on the last Sunday of October.
-    //
-    // The earliest possible last sunday in march is the 25th.
-    // If we're before the 25th March it's not BST
-    // If we're after or on the 25th:
-    //   Is it Sunday?
-    //     Is it after 0100 UTC? It's BST. Otherwise not BST
-    //   Is there a sunday in the remaining days of march excluding today?
-    //     Yes? It's not BST
-    //     No? It is BST
+    if(rtcDateTime.month < 3) {
+        return false;
+    } else if(rtcDateTime.month == 3) {
+        // The earliest possible last sunday in march is the 25th.
+        // The last day of March is the 31st.
+        // If we're before the 25th March it's not BST
+        // If we're after or on the 25th:
+        //   Is it Sunday?
+        //     Is it after 0100 UTC? It's BST. Otherwise not BST
+        //   Is there a sunday in the remaining days of march after today?
+        //     Yes? It's not BST
+        //     No? It is BST
+        if(rtcDateTime.day < 25)
+            return false;
+        if(day_of_week == 6) {  // It the last sunday in march!
+            if(rtcDateTime.millisecond >= 60*60*1000)
+                return true;
+            else
+                return false;
+        }
+        if(rtcDateTime.day + (6 - day_of_week) > 31)
+            // There are no more Sundays this march
+            return true;
+        else
+            return false;
+    } else if(rtcDateTime.month < 10) {
+        return true;
+    } else if(rtcDateTime.month == 10) {
+        // Same logic as March but inverted
+        if(rtcDateTime.day < 25)
+            return true;
+        if(day_of_week == 6) {  // It the last sunday in march!
+            if(rtcDateTime.millisecond >= 60*60*1000)
+                return false;
+            else
+                return true;
+        }
+        if(rtcDateTime.day + (6 - day_of_week) > 31)
+            // There are no more Sundays this march
+            return false;
+        else
+            return true;
 
+    } else {
+        return false;
 }
