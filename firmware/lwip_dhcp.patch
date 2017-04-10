@@ -1,0 +1,15 @@
+diff --git a/os/various/lwip_bindings/lwipthread.c b/os/various/lwip_bindings/lwipthread.c
+index 56442ba..8ab71a6 100644
+--- a/os/various/lwip_bindings/lwipthread.c
++++ b/os/various/lwip_bindings/lwipthread.c
+@@ -279,7 +279,9 @@ static THD_FUNCTION(lwip_thread, p) {
+           tcpip_callback_with_block((tcpip_callback_fn) netif_set_link_up,
+                                      &thisif, 0);
+ #if LWIP_DHCP
+-          dhcp_start(&thisif);
++          if(ip.addr == 0) {
++            dhcp_start(&thisif);
++          }
+ #endif
+         }
+         else {

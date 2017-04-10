@@ -70,15 +70,21 @@ static void cmd_threads(BaseSequentialStream *chp, int argc, char *argv[]) {
 // version command: Shows git tag, commit and dirty status
 // (git describe --abbrev=8 --always --dirty, via Makefile GITVERSION)
 static void cmd_version(BaseSequentialStream *chp, int argc, char *argv[]) {
-    (void)argc;
     (void)argv;
+    if (argc > 0) {
+        chprintf(chp, "Usage: version\r\n");
+        return;
+    }
     chprintf(chp, "Version: %s\r\n", FW_VERSION);
 }
 
 // load command: Load config from flash, overwriting config in memory
 static void cmd_load(BaseSequentialStream *chp, int argc, char *argv[]) {
-    (void)argc;
     (void)argv;
+    if (argc > 0) {
+        chprintf(chp, "Usage: load\r\n");
+        return;
+    }
     if(config_load())
         chprintf(chp, "Config loaded successfully.\r\n");
     else
@@ -87,24 +93,44 @@ static void cmd_load(BaseSequentialStream *chp, int argc, char *argv[]) {
 
 // save command: Save config in memory to flash
 static void cmd_save(BaseSequentialStream *chp, int argc, char *argv[]) {
-    (void)argc;
     (void)argv;
+    if (argc > 0) {
+        chprintf(chp, "Usage: save\r\n");
+        return;
+    }
     config_save();
     chprintf(chp, "Config saved.\r\n");
 }
 
 // netinfo command: Display networking details from DHCP
 static void cmd_netinfo(BaseSequentialStream *chp, int argc, char *argv[]) {
-    (void)argc;
     (void)argv;
+    if (argc > 0) {
+        chprintf(chp, "Usage: netinfo\r\n");
+        return;
+    }
     chprintf(chp, "Not implemented.\r\n");
     // TODO
 }
 
 // status: Show current system status (ie print state struct)
 static void cmd_status(BaseSequentialStream *chp, int argc, char *argv[]) {
-    (void)argc;
     (void)argv;
+    if (argc > 0) {
+        chprintf(chp, "Usage: status\r\n");
+        return;
+    }
+    chprintf(chp, "Not implemented.\r\n");
+    // TODO
+}
+
+// reboot: Reboot the system, useful for applying network changes
+static void cmd_reboot(BaseSequentialStream *chp, int argc, char *argv[]) {
+    (void)argv;
+    if (argc > 0) {
+        chprintf(chp, "Usage: reboot\r\n");
+        return;
+    }
     chprintf(chp, "Not implemented.\r\n");
     // TODO
 }
@@ -205,6 +231,7 @@ static const ShellCommand commands[] = {
     {"set", cmd_set},
     {"netinfo", cmd_netinfo},
     {"status", cmd_status},
+    {"reboot", cmd_reboot},
     {NULL, NULL}
 };
 

@@ -12,28 +12,21 @@
 #include "lwip/opt.h"
 #include "lwip/arch.h"
 #include "lwip/api.h"
+#include "lwip/dns.h"
 
 #include "rom.h"
 #include "display.h"
 #include "rtc.h"
 #include "sntp.h"
 #include "usb.h"
+#include "config.h"
 
 static THD_WORKING_AREA(waUsbSer, 0x100);
 
 int main(void) {
-    /* Set up our IP details */
     uint8_t mac_addr[6];
-    struct ip_addr address, netmask, gateway;
-    IP4_ADDR(&address, 0, 0, 0, 0);
-    IP4_ADDR(&netmask, 255, 255, 255, 255);
-    IP4_ADDR(&gateway, 0, 0, 0, 0);
-    lwipthread_opts_t lwipopts = {
-        .macaddress = mac_addr,
-        .address = address.addr,
-        .netmask = netmask.addr,
-        .gateway = gateway.addr,
-    };
+    lwipthread_opts_t lwipopts;
+    lwipopts.macaddress = mac_addr; // Pointer to array, set layer
 
     /* Initialise ChibiOS */
     halInit();
@@ -42,7 +35,17 @@ int main(void) {
     /* Read our MAC address from the EEPROM */
     rom_get_eui48(mac_addr);
 
-    /* Initialise lwIP using the new MAC address */
+    // If not using DHCP, set details from config:
+    if(!bigtime_config.net_dhcp_enable)
+    {
+        lwipopts.address = bigtime_config.net_static_ip.addr;
+        lwipopts.netmask = bigtime_config.net_static_netmask.addr;
+        lwipopts.gateway = bigtime_config.net_static_gateway.addr;
+        dns_setserver(0, &bigtime_config.net_static_dns1);
+        dns_setserver(1, &bigtime_config.net_static_dns2);
+    }
+
+    /* Initialise lwIP (automatically does DHCP if ip == 0.0.0.0) */
     lwipInit(&lwipopts);
 
     // Start USB config shell

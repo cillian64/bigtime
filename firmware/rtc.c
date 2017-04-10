@@ -25,9 +25,6 @@ static uint16_t days_in_year(uint16_t year);
 // Give the number of days in a given month (1-based) in a given year (AD)
 static uint8_t days_in_month(uint8_t month, uint16_t year);
 
-// Calculate whether the given ntp timestamp is within British Summer Time.
-static bool is_bst(uint64_t ntpDateTime);
-
 void rtc_set(RTCDateTime *rtcDateTime)
 {
     // First use rtcSetTime to set date and time to the nearest second
@@ -174,7 +171,7 @@ uint8_t days_in_month(uint8_t month, uint16_t year)
     return 0; // This can never happen.
 }
 
-static bool is_bst(uint64_t ntpDateTime)
+bool is_bst(uint64_t ntpDateTime)
 {
     // We need to calculate the current day of week
     uint32_t secs = ntpDateTime >> 32;
@@ -185,7 +182,6 @@ static bool is_bst(uint64_t ntpDateTime)
     // Find what month it is, via an RTCDateTime.
     RTCDateTime rtcDateTime;
     rtc_from_ntp(&rtcDateTime, ntpDateTime);
-    uint8_t month = rtcDateTime.month;  // 1 is January, 12 is December
 
     // The UK observes BST from 0100 UTC on the last Sunday of March
     // until 0100 UTC on the last Sunday of October.
@@ -201,37 +197,38 @@ static bool is_bst(uint64_t ntpDateTime)
         //   Is there a sunday in the remaining days of march after today?
         //     Yes? It's not BST
         //     No? It is BST
-        if(rtcDateTime.day < 25)
+        if(rtcDateTime.day < 25) {
             return false;
-        if(day_of_week == 6) {  // It the last sunday in march!
+        } else if(day_of_week == 6) {  // It the last sunday in march!
             if(rtcDateTime.millisecond >= 60*60*1000)
                 return true;
             else
                 return false;
-        }
-        if(rtcDateTime.day + (6 - day_of_week) > 31)
+        } else if(rtcDateTime.day + (6 - day_of_week) > 31) {
             // There are no more Sundays this march
             return true;
-        else
+        } else {
             return false;
+        }
     } else if(rtcDateTime.month < 10) {
         return true;
     } else if(rtcDateTime.month == 10) {
         // Same logic as March but inverted
-        if(rtcDateTime.day < 25)
+        if(rtcDateTime.day < 25) {
             return true;
-        if(day_of_week == 6) {  // It the last sunday in march!
-            if(rtcDateTime.millisecond >= 60*60*1000)
+        } else if(day_of_week == 6) {
+            if(rtcDateTime.millisecond >= 60*60*1000) {
                 return false;
-            else
+            } else {
                 return true;
-        }
-        if(rtcDateTime.day + (6 - day_of_week) > 31)
+            }
+        } else if(rtcDateTime.day + (6 - day_of_week) > 31) {
             // There are no more Sundays this march
             return false;
-        else
+        } else {
             return true;
-
+        }
     } else {
         return false;
+    }
 }
