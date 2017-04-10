@@ -25,6 +25,9 @@ static uint16_t days_in_year(uint16_t year);
 // Give the number of days in a given month (1-based) in a given year (AD)
 static uint8_t days_in_month(uint8_t month, uint16_t year);
 
+// Calculate whether the given ntp timestamp is within British Summer Time.
+static bool is_bst(uint64_t ntpDateTime);
+
 void rtc_set(RTCDateTime *rtcDateTime)
 {
     // First use rtcSetTime to set date and time to the nearest second
@@ -169,4 +172,31 @@ uint8_t days_in_month(uint8_t month, uint16_t year)
         default: chSysHalt("Invalid month in days_in_month");
     }
     return 0; // This can never happen.
+}
+
+static bool is_bst(uint64_t ntpDateTime)
+{
+    // We need to calculate the current day of week
+    uint32_t secs = ntpDateTime >> 32;
+    // Days since 0000 1st January 1900:
+    uint32_t days = secs / (24*60*60);
+    // 1st January 1900 was a Monday, which we'll denote day 0, so sunday=6
+    uint8_t day_of_week = days % 7;
+    // Find what month it is, via an RTCDateTime.
+    RTCDateTime rtcDateTime;
+    rtc_from_ntp(&rtcDateTime, ntpDateTime);
+    uint8_t month = rtcDateTime.month;  // 1 is January, 12 is December
+
+    // The UK observes BST from 0100 UTC on the last Sunday of March
+    // until 0100 UTC on the last Sunday of October.
+    //
+    // The earliest possible last sunday in march is the 25th.
+    // If we're before the 25th March it's not BST
+    // If we're after or on the 25th:
+    //   Is it Sunday?
+    //     Is it after 0100 UTC? It's BST. Otherwise not BST
+    //   Is there a sunday in the remaining days of march excluding today?
+    //     Yes? It's not BST
+    //     No? It is BST
+
 }
