@@ -22,6 +22,9 @@ int32_t rtc_delta(RTCDateTime *rtcBegin, RTCDateTime *rtcEnd);
 // BST) including sub-second precision.
 void rtc_from_ntp(RTCDateTime *rtcOut, uint64_t ntpIn);
 
+// Convert an RTCDateTime to an NTP timestamp
+uint64_t ntp_from_rtc(RTCDateTime *rtcDateTime);
+
 // Calculate whether the given NTP timestamp is within British Summer Time
 bool is_bst(uint64_t ntpDateTime);
 

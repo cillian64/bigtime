@@ -8,6 +8,7 @@
 #include "ch.h"
 #include "hal.h"
 #include "hal_channels.h"
+#include "hal_rtc.h"
 
 #include "shell.h"
 #include "chprintf.h"
@@ -15,6 +16,7 @@
 #include "shell.h"
 #include "usbshell.h"
 #include "config.h"
+#include "rtc.h"
 
 #include <lwip/netif.h>
 #include <lwip/dns.h>
@@ -132,6 +134,37 @@ static void cmd_status(BaseSequentialStream *chp, int argc, char *argv[]) {
     // TODO
 }
 
+// datetime: Show datetime: YYYY-MM-DD HH:MM:SS.ssss
+static void cmd_datetime(BaseSequentialStream *chp, int argc, char *argv[]) {
+    (void)argv;
+    if (argc > 0) {
+        chprintf(chp, "Usage: datetime\r\n");
+        return;
+    }
+    RTCDateTime rtcDateTime;
+    rtcGetTime(&RTCD1, &rtcDateTime);
+    chprintf(chp, "%04u-%02u-%02u %02u:%02u:%02u.%03u",
+             rtcDateTime.year, rtcDateTime.month, rtcDateTime.day,
+             rtcDateTime.millisecond / 3600000,
+             (rtcDateTime.millisecond % 3600000) / 60000,
+             (rtcDateTime.millisecond % 60000) / 1000,
+             rtcDateTime.millisecond % 1000);
+}
+
+// epoch: Show epoch time, seconds since 1900-01-01 00:00:00
+static void cmd_epoch(BaseSequentialStream *chp, int argc, char *argv[]) {
+    (void)argv;
+    if (argc > 0) {
+        chprintf(chp, "Usage: epoch\r\n");
+        return;
+    }
+    RTCDateTime rtcDateTime;
+    rtcGetTime(&RTCD1, &rtcDateTime);
+    uint64_t ntpDateTime = ntp_from_rtc(&rtcDateTime);
+    chprintf(chp, "%u.%03u", ntpDateTime >> 32,
+             ((ntpDateTime & 0xffffffff) * 1000) >> 32);
+}
+
 // reboot: Reboot the system, useful for applying network changes
 static void cmd_reboot(BaseSequentialStream *chp, int argc, char *argv[]) {
     (void)argv;
@@ -238,6 +271,8 @@ static const ShellCommand commands[] = {
     {"set", cmd_set},
     {"netinfo", cmd_netinfo},
     {"status", cmd_status},
+    {"datetime", cmd_datetime},
+    {"epoch", cmd_epoch},
     {"reboot", cmd_reboot},
     {NULL, NULL}
 };

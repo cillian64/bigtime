@@ -13,9 +13,6 @@
 #define RTC_TR_ST_OFFSET                    4
 #define RTC_TR_SU_OFFSET                    0
 
-// Convert an RTCDateTime to an NTP timestamp
-static uint64_t ntp_from_rtc(RTCDateTime *rtcDateTime);
-
 // Is the given year (AD) a leap year? Doesn't handle century non-leap years
 static bool is_leap_year(uint16_t year);
 
@@ -120,7 +117,7 @@ void rtc_from_ntp(RTCDateTime *rtcOut, uint64_t ntpIn)
     rtcOut->millisecond += (ntpIn*1000) >> 32;
 }
 
-static uint64_t ntp_from_rtc(RTCDateTime *rtcDateTime)
+uint64_t ntp_from_rtc(RTCDateTime *rtcDateTime)
 {
     uint32_t secs = rtcDateTime->millisecond / 1000;
 
