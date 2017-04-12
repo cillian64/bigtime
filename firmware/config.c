@@ -8,7 +8,9 @@
 
 #define FLASH_CFG_SECTOR (11)
 #define FLASH_CFG_ADDR ((uint32_t*)0x080e0000)
+
 bigtime_config_t bigtime_config;
+bigtime_state_t bigtime_state;
 
 // Return CRC of memory location
 static uint32_t do_crc(uint32_t* src, size_t n);

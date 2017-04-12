@@ -17,6 +17,7 @@
 #include "usbshell.h"
 #include "config.h"
 #include "rtc.h"
+#include "sntp.h"
 
 #include <lwip/netif.h>
 #include <lwip/dns.h>
@@ -123,6 +124,43 @@ static void cmd_netinfo(BaseSequentialStream *chp, int argc, char *argv[]) {
     chprintf(chp, "DNS server 2... %s\r\n", ipaddr_ntoa(&dns2));
 }
 
+// Print a RTCDateTime like YYYY-MM-DD HH:MM:SS.ssss\n
+static void format_rtcdatetime(BaseSequentialStream *chp,
+                               RTCDateTime *rtcDateTime)
+{
+    chprintf(chp, "%04u-%02u-%02u %02u:%02u:%02u.%03u\n",
+             rtcDateTime->year, rtcDateTime->month, rtcDateTime->day,
+             rtcDateTime->millisecond / 3600000,
+             (rtcDateTime->millisecond % 3600000) / 60000,
+             (rtcDateTime->millisecond % 60000) / 1000,
+             rtcDateTime->millisecond % 1000);
+}
+
+// Pretty-print the NTP status codes returned by get_ntp_timestamp
+static void format_ntp_status(BaseSequentialStream *chp, int ntp_status)
+{
+    switch(ntp_status) {
+        case SNTP_UNKNOWN:
+            chprintf(chp, "Unknown\n");
+            break;
+        case SNTP_SUCCESS:
+            chprintf(chp, "Success\n");
+            break;
+        case SNTP_NETWORK:
+            chprintf(chp, "Network error\n");
+            break;
+        case SNTP_KOD_DENY:
+            chprintf(chp, "Kiss of Death: DENY or RSTR\n");
+            break;
+        case SNTP_KOD_RATE:
+            chprintf(chp, "Kiss of Death: RATE\n");
+            break;
+        case SNTP_KOD_OTHER:
+            chprintf(chp, "Kiss of Death: Unrecognised code\n");
+            break;
+    }
+}
+
 // status: Show current system status (ie print state struct)
 static void cmd_status(BaseSequentialStream *chp, int argc, char *argv[]) {
     (void)argv;
@@ -130,8 +168,20 @@ static void cmd_status(BaseSequentialStream *chp, int argc, char *argv[]) {
         chprintf(chp, "Usage: status\r\n");
         return;
     }
-    chprintf(chp, "Not implemented.\r\n");
-    // TODO
+    chprintf(chp, "Last sync time......... ");
+    format_rtcdatetime(chp, &bigtime_state.last_sync);
+    chprintf(chp, "NTP server 1 status.... ");
+    format_ntp_status(chp, bigtime_state.ntp_server1_status);
+    chprintf(chp, "NTP server 1 queried... ");
+    format_rtcdatetime(chp, &bigtime_state.ntp_server1_queried);
+    chprintf(chp, "NTP server 2 status.... ");
+    format_ntp_status(chp, bigtime_state.ntp_server2_status);
+    chprintf(chp, "NTP server 2 queried... ");
+    format_rtcdatetime(chp, &bigtime_state.ntp_server2_queried);
+    chprintf(chp, "NTP server 3 status.... ");
+    format_ntp_status(chp, bigtime_state.ntp_server3_status);
+    chprintf(chp, "NTP server 3 queried... ");
+    format_rtcdatetime(chp, &bigtime_state.ntp_server3_queried);
 }
 
 // datetime: Show datetime: YYYY-MM-DD HH:MM:SS.ssss
@@ -143,12 +193,7 @@ static void cmd_datetime(BaseSequentialStream *chp, int argc, char *argv[]) {
     }
     RTCDateTime rtcDateTime;
     rtcGetTime(&RTCD1, &rtcDateTime);
-    chprintf(chp, "%04u-%02u-%02u %02u:%02u:%02u.%03u",
-             rtcDateTime.year, rtcDateTime.month, rtcDateTime.day,
-             rtcDateTime.millisecond / 3600000,
-             (rtcDateTime.millisecond % 3600000) / 60000,
-             (rtcDateTime.millisecond % 60000) / 1000,
-             rtcDateTime.millisecond % 1000);
+    format_rtcdatetime(chp, &rtcDateTime);
 }
 
 // epoch: Show epoch time, seconds since 1900-01-01 00:00:00
@@ -173,6 +218,18 @@ static void cmd_reboot(BaseSequentialStream *chp, int argc, char *argv[]) {
         return;
     }
     NVIC_SystemReset();
+}
+
+// sync: Force an immediate NTP synchronisation attempt
+static void cmd_sync(BaseSequentialStream *chp, int argc, char *argv[]) {
+    (void)argv;
+    if (argc > 0) {
+        chprintf(chp, "Usage: sync\r\n");
+        return;
+    }
+    // Set the "last synced" time to 0, so the management thread thinks
+    // we need a sync ASAP.
+    memset(&bigtime_state.last_sync, 0, sizeof(bigtime_state.last_sync));
 }
 
 // show command: Display current config (in memory)
@@ -271,6 +328,7 @@ static const ShellCommand commands[] = {
     {"set", cmd_set},
     {"netinfo", cmd_netinfo},
     {"status", cmd_status},
+    {"sync", cmd_sync},
     {"datetime", cmd_datetime},
     {"epoch", cmd_epoch},
     {"reboot", cmd_reboot},

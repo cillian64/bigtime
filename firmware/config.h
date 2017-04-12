@@ -25,8 +25,18 @@ typedef struct bigtime_config_t {
     bool disp_has_seconds;
     bool disp_auto_bst;
 } bigtime_config_t;
-
 extern bigtime_config_t bigtime_config;
+
+typedef struct bigtime_state_t {
+    RTCDateTime last_sync;
+    int ntp_server1_status;
+    RTCDateTime ntp_server1_queried;
+    int ntp_server2_status;
+    RTCDateTime ntp_server2_queried;
+    int ntp_server3_status;
+    RTCDateTime ntp_server3_queried;
+} bigtime_state_t;
+extern bigtime_state_t bigtime_state;
 
 // Save bigtime_config to flash
 void config_save(void);

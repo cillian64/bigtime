@@ -48,6 +48,9 @@ int main(void) {
     /* Initialise lwIP (automatically does DHCP if ip == 0.0.0.0) */
     lwipInit(&lwipopts);
 
+    // Initialise the state structure
+    memset(&bigtime_state, 0, sizeof(bigtime_state));
+
     // Start USB config shell
     chThdCreateStatic(waUsbSer, sizeof(waUsbSer), NORMALPRIO, UsbSerThread,
                       NULL);
