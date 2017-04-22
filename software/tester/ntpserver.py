@@ -13,36 +13,43 @@ class NTPServer:
 
     ntp = NTPServer()
     ntp.start(address="0.0.0.0", port=123)
-    ntp.time = 12345
+    ntp.set_time(12345)
     ntp.stop()
     """
     def __init__(self):
-        self.stopflag = False
-        self.time = None
+        self._stopflag = False
+        self._time = None
+        self._time_lock = threading.Lock()
+        self._thread = None
 
     def start(self, address="0.0.0.0", port=123):
-        self.address = address
-        self.port = port
-        self.thread = threading.Thread(target=self.run)
-        self.thread.start()
+        self._thread = threading.Thread(target=self._run,
+                                        args=[address, port])
+        self._thread.start()
 
     def stop(self):
-        self.stopflag = True
-        self.thread.join()
+        self._stopflag = True
+        self._thread.join()
 
-    def run(self):
+    def set_time(self, time):
+        self._time_lock.acquire()
+        self._time = time
+        self._time_lock.release()
+
+    def _run(self, address, port):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        sock.bind((self.address, self.port))
+        sock.bind((address, port))
         while True:
-            if self.stopflag:
+            if self._stopflag:
                 return
             rlist, wlist, elist = select.select([sock], [], [], 1)
             for tempSocket in rlist:
                 try:
-                    if self.time is None:
+                    self._time_lock.acquire()
+                    if self._time is None:
                         recvTimestamp = ntplib.system_to_ntp_time(time.time())
                     else:
-                        recvTimestamp = ntplib.system_to_ntp_time(self.time)
+                        recvTimestamp = ntplib.system_to_ntp_time(self._time)
 
                     data, addr = tempSocket.recvfrom(1024)
                     recvPacket = ntplib.NTPPacket()
@@ -56,13 +63,14 @@ class NTPServer:
                     sendPacket.orig_timestamp = ntplib._to_time(
                         timeStamp_high, timeStamp_low)
                     sendPacket.recv_timestamp = recvTimestamp
-                    if self.time is None:
+                    if self._time is None:
                         sendPacket.tx_timestamp = ntplib.system_to_ntp_time(
                                 time.time())
                     else:
                         sendPacket.tx_timestamp = ntplib.system_to_ntp_time(
-                                self.time)
+                                self._time)
                     sock.sendto(sendPacket.to_data(), addr)
+                    self._time_lock.release()
                 except socket.error as msg:
                     print(msg)
 
