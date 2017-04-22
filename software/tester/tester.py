@@ -26,16 +26,18 @@ def check_local(timestamp, tolerance=1):
 
 
 if __name__ == "__main__":
+    ntp = ntpserver.NTPServer()
+    ntp.start()
     for timestamp in times:
         tm = time.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
         epoch = time.mktime(tm)
         print("Serving {}".format(timestamp))
-        ntpserver.startServer(single=True, timestamp=epoch, quiet=True)
+        ntp.time = epoch
         sync()
         check_epoch(epoch)
         check_local(timestamp)
-        ntpserver.stopServer()
 
         time.sleep(5)
         check_epoch(epoch + 5)
         check_local(time.strftime("%Y-%m-%d %H:%M:%S", epoch + 5))
+    ntp.stop()

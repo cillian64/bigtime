@@ -2,36 +2,43 @@ import socket
 import time
 import select
 import ntplib
+import threading
 
 
-def startServer(listenIp="0.0.0.0", listenPort=123, single=False,
-                timestamp=None, quiet=False):
+class NTPServer(threading.Thread):
     """
-    Start an NTP server listening on interface listenIp, UDP port listenPort
-    If single is set to True then the function exits after the first NTP
-    response is sent.  Otherwise it continues servicing requests indefinitely.
-    timestamp is the seconds since epoch to send to each request.  If
-    timestamp is None then each request is sent the current system time.
-    """
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind((listenIp, listenPort))
-    if not quiet:
-        print("Listening at {}:{}".format(listenIp, listenPort))
+    Start an NTP server listening on interface address, UDP port port.
+    time is the seconds since epoch to send to each request.  If time is None
+    then each request is sent the current system time.
 
-    while True:
-        try:
+    ntp = NTPServer(address="0.0.0.0", port=123)
+    ntp.start()
+    ntp.time = 12345
+    ntp.stop()
+    """
+    def __init__(self, address="0.0.0.0", port=123):
+        threading.Thread.__init__(self)
+        self.stopflag = False
+        self.time = None
+        self.address = address
+        self.port = port
+
+    def stop(self):
+        self.stopflag = True
+
+    def run(self):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        sock.bind((self.address, self.port))
+        while True:
+            if self.stopflag:
+                return
             rlist, wlist, elist = select.select([sock], [], [], 1)
-        except KeyboardInterrupt:
-            print("Exiting.")
-            return
-
-        if len(rlist) != 0:
             for tempSocket in rlist:
                 try:
-                    if timestamp is None:
+                    if self.time is None:
                         recvTimestamp = ntplib.system_to_ntp_time(time.time())
                     else:
-                        recvTimestamp = ntplib.system_to_ntp_time(timestamp)
+                        recvTimestamp = ntplib.system_to_ntp_time(self.time)
 
                     data, addr = tempSocket.recvfrom(1024)
                     recvPacket = ntplib.NTPPacket()
@@ -45,20 +52,17 @@ def startServer(listenIp="0.0.0.0", listenPort=123, single=False,
                     sendPacket.orig_timestamp = ntplib._to_time(
                         timeStamp_high, timeStamp_low)
                     sendPacket.recv_timestamp = recvTimestamp
-                    if timestamp is None:
+                    if self.time is None:
                         sendPacket.tx_timestamp = ntplib.system_to_ntp_time(
                                 time.time())
                     else:
                         sendPacket.tx_timestamp = ntplib.system_to_ntp_time(
-                                timestamp)
+                                self.time)
                     sock.sendto(sendPacket.to_data(), addr)
-                    if not quiet:
-                        print("Sent timestamp {} to {}:{}".format(
-                            recvTimestamp, addr[0], addr[1]))
-                    if single:
-                        return
                 except socket.error as msg:
                     print(msg)
 
+
 if __name__ == "__main__":
-    startServer()
+    ntp = NTPServer()
+    ntp.start()
