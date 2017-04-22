@@ -32,6 +32,7 @@ class NTPServer:
         self._stopflag = False
         self._thread = threading.Thread(target=self._run,
                                         args=[address, port])
+        self._thread.daemon = True
         self._thread.start()
 
     def stop(self):
