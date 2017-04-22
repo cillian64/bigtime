@@ -49,9 +49,8 @@ class NTPServer:
         Set the timestamp to be served.  Units are system epoch-seconds.
         Pass time=None to serve system time.
         """
-        self._time_lock.acquire()
-        self._time = time
-        self._time_lock.release()
+        with self._time_lock:
+            self._time = time
 
     def _run(self, address, port):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -93,3 +92,11 @@ class NTPServer:
 if __name__ == "__main__":
     ntp = NTPServer()
     ntp.start()
+    print("NTP server running.")
+    while True:
+        try:
+            time.sleep(1)
+        except KeyboardInterrupt:
+            print("Stopping NTP server.")
+            ntp.stop()
+            break
