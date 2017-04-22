@@ -5,26 +5,30 @@ import ntplib
 import threading
 
 
-class NTPServer(threading.Thread):
+class NTPServer:
     """
     Start an NTP server listening on interface address, UDP port port.
     time is the seconds since epoch to send to each request.  If time is None
     then each request is sent the current system time.
 
-    ntp = NTPServer(address="0.0.0.0", port=123)
-    ntp.start()
+    ntp = NTPServer()
+    ntp.start(address="0.0.0.0", port=123)
     ntp.time = 12345
     ntp.stop()
     """
-    def __init__(self, address="0.0.0.0", port=123):
-        threading.Thread.__init__(self)
+    def __init__(self):
         self.stopflag = False
         self.time = None
+
+    def start(self, address="0.0.0.0", port=123):
         self.address = address
         self.port = port
+        self.thread = threading.Thread(target=self.run)
+        self.thread.start()
 
     def stop(self):
         self.stopflag = True
+        self.thread.join()
 
     def run(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
