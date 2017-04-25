@@ -91,7 +91,7 @@ class NTPServer:
 
 if __name__ == "__main__":
     ntp = NTPServer()
-    ntp.start()
+    ntp.start(port=1337)
     print("NTP server running.")
     while True:
         try:
