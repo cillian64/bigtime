@@ -24,8 +24,16 @@ static THD_WORKING_AREA(waUsbSer, 0x100);
 
 int main(void) {
     uint8_t mac_addr[6];
-    lwipthread_opts_t lwipopts;
-    lwipopts.macaddress = mac_addr; // Pointer to array, set layer
+    struct ip_addr address, netmask, gateway;
+    IP4_ADDR(&address, 0, 0, 0, 0);
+    IP4_ADDR(&netmask, 255, 255, 255, 255);
+    IP4_ADDR(&gateway, 0, 0, 0, 0);
+    lwipthread_opts_t lwipopts = {
+        .macaddress = mac_addr,
+        .address = address.addr,
+        .netmask = netmask.addr,
+        .gateway = gateway.addr,
+    };
 
     /* Initialise ChibiOS */
     halInit();
