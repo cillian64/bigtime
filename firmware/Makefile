@@ -83,7 +83,7 @@ endif
 #
 
 # Define project name here
-PROJECT = portfire
+PROJECT = bigtime
 
 # Imported source files and paths
 CHIBIOS = ./ChibiOS
@@ -97,7 +97,6 @@ include $(CHIBIOS)/os/hal/osal/rt/osal.mk
 include $(CHIBIOS)/os/rt/rt.mk
 include $(CHIBIOS)/os/common/ports/ARMCMx/compilers/GCC/mk/port_v7m.mk
 # Other files (optional).
-include $(CHIBIOS)/test/rt/test.mk
 include $(CHIBIOS)/os/hal/lib/streams/streams.mk
 include $(CHIBIOS)/os/various/shell/shell.mk
 include $(CHIBIOS)/os/various/lwip_bindings/lwip.mk
@@ -117,7 +116,6 @@ CSRC = $(STARTUPSRC) \
        $(HALSRC) \
        $(PLATFORMSRC) \
        $(BOARDSRC) \
-       $(TESTSRC) \
        $(LWSRC) \
        $(STREAMSSRC) \
        $(SHELLSRC) \
@@ -154,7 +152,7 @@ ASMXSRC = $(STARTUPASM) $(PORTASM) $(OSALASM)
 
 INCDIR = $(CHIBIOS)/os/license \
          $(STARTUPINC) $(KERNINC) $(PORTINC) $(OSALINC) \
-         $(HALINC) $(PLATFORMINC) $(BOARDINC) $(TESTINC) \
+         $(HALINC) $(PLATFORMINC) $(BOARDINC) \
          $(STREAMSINC) $(SHELLINC) $(LWINC) $(FATFSINC) \
          $(CHIBIOS)/os/various
 
