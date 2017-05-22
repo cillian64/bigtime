@@ -65,36 +65,23 @@ int main(void) {
                       NULL);
 
     display_init();
+
+    uint64_t ntpDateTime;
+    int result = get_ntp_timestamp("pool.ntp.org", &ntpDateTime);
+    if(result == SNTP_SUCCESS)
+    {
+        RTCDateTime rtcDateTime;
+        rtc_from_ntp(&rtcDateTime, ntpDateTime);
+        rtc_set(&rtcDateTime);
+    }
+    else
+        chSysHalt("SNTP failed.");
+
     while(1)
     {
-        for(int i=0; i<10; i++)
-        {
-            struct BCDTime faketime;
-            faketime.ht = i;
-            faketime.hu = i;
-            faketime.mnt = i;
-            faketime.mnu = i;
-            display_time(&faketime);
-            chThdSleepMilliseconds(1000);
-        }
+        struct BCDTime bcdTime;
+        rtc_get_bcd(&bcdTime);
+        display_time(&bcdTime);
+        chThdSleepMilliseconds(1000);
     }
-
-//        uint64_t ntpDateTime;
-//        int result = get_ntp_timestamp("pool.ntp.org", &ntpDateTime);
-//        if(result == SNTP_SUCCESS)
-//        {
-//            RTCDateTime rtcDateTime;
-//            rtc_from_ntp(&rtcDateTime, ntpDateTime);
-//            rtc_set(&rtcDateTime);
-//        }
-//        struct BCDTime bcdTime;
-//        rtc_get_bcd(&bcdTime);
-//        display_time(&bcdTime, false);
-//    }
-
-//  /* Main thread is done now and can sleep forever. */
-//    chThdSleep(TIME_INFINITE);
-//
-//    /* In case idle thread is disabled */
-//    while(1);
 }
