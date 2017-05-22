@@ -246,6 +246,16 @@ debug: build/$(PROJECT).elf $(OUTFILES)
 					  -ex "attach 1" \
 					  -ex "file build/$(PROJECT).elf"
 
+power:
+	arm-none-eabi-gdb --batch \
+		              -ex 'target extended-remote $(BMP_PORT)' \
+					  -ex 'monitor tpwr enable'
+
+unpower:
+	arm-none-eabi-gdb --batch \
+		              -ex 'target extended-remote $(BMP_PORT)' \
+					  -ex 'monitor tpwr disable'
+
 #
 # End BMP flashing
 ##############################################################################
