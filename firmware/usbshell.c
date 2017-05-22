@@ -15,6 +15,7 @@
 
 #include "shell.h"
 #include "usbshell.h"
+#include "usbcfg.h"
 #include "config.h"
 #include "rtc.h"
 #include "sntp.h"
@@ -129,7 +130,7 @@ static void format_rtcdatetime(BaseSequentialStream *chp,
                                RTCDateTime *rtcDateTime)
 {
     chprintf(chp, "%04u-%02u-%02u %02u:%02u:%02u.%03u\n",
-             rtcDateTime->year, rtcDateTime->month, rtcDateTime->day,
+             rtcDateTime->year + 1980, rtcDateTime->month, rtcDateTime->day,
              rtcDateTime->millisecond / 3600000,
              (rtcDateTime->millisecond % 3600000) / 60000,
              (rtcDateTime->millisecond % 60000) / 1000,
@@ -331,4 +332,47 @@ const ShellConfig shell_cfg1 = {
     (BaseSequentialStream *)&SDU1,
     commands
 };
+
+/**
+ * Main thread for the USB Serial module. Start the USB serial driver and spawn
+ * a shell using it. The shell is killed if the USB connection becomes
+ * inactive, and is spawned again when it becomes active.
+ */
+THD_FUNCTION(UsbSerThread, arg)
+{
+    (void)arg;
+    thread_t *shelltp = NULL;
+
+    /*
+     * Initializes a serial-over-USB CDC driver.
+     */
+    sduObjectInit(&SDU1);
+    sduStart(&SDU1, &serusbcfg);
+
+    /*
+     * Activates the USB driver and then the USB bus pull-up on D+.
+     * Note, a delay is inserted in order to not have to disconnect the cable
+     * after a reset.
+     */
+    usbDisconnectBus(serusbcfg.usbp);
+    chThdSleepMilliseconds(1000);
+    usbStart(serusbcfg.usbp, &usbcfg);
+    usbConnectBus(serusbcfg.usbp);
+
+    /*
+     * Shell manager initialization.
+     */
+    shellInit();
+    while (true) {
+        if (!shelltp && (SDU1.config->usbp->state == USB_ACTIVE))
+            shelltp = chThdCreateFromHeap(NULL,
+                    THD_WORKING_AREA_SIZE(2048), "shell",
+                    NORMALPRIO, shellThread, (void*)&shell_cfg1);
+        else if (chThdTerminatedX(shelltp)) {
+            chThdRelease(shelltp);    /* Recovers memory of the previous shell.   */
+            shelltp = NULL;           /* Triggers spawning of a new shell.        */
+        }
+        chThdSleepMilliseconds(1000);
+    }
+}
 

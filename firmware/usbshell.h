@@ -9,6 +9,7 @@
 
 extern const ShellConfig shell_cfg1;
 extern SerialUSBDriver SDU1;
+THD_FUNCTION(UsbSerThread, arg);
 
 #endif
 

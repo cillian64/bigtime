@@ -17,8 +17,8 @@
 #include "rtc.h"
 #include "display.h"
 #include "sntp.h"
-#include "usb.h"
 #include "config.h"
+#include "usbshell.h"
 
 static THD_WORKING_AREA(waUsbSer, 0x100);
 
