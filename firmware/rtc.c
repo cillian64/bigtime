@@ -85,7 +85,7 @@ void rtc_from_ntp(RTCDateTime *rtcOut, uint64_t ntpIn)
     }
 
     // Days in the current month up to start of today
-    rtcOut->day = 1 + secs / (24*60*60);
+    rtcOut->day = 2 + secs / (24*60*60);
     secs = secs % (24*60*60);
 
     // And the time-of-day in milliseconds
