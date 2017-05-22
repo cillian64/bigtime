@@ -14,8 +14,8 @@
 #include "lwip/dns.h"
 
 #include "rom.h"
-#include "display.h"
 #include "rtc.h"
+#include "display.h"
 #include "sntp.h"
 #include "usb.h"
 #include "config.h"
@@ -42,6 +42,8 @@ int main(void) {
     /* Read our MAC address from the EEPROM */
     rom_get_eui48(mac_addr);
 
+    bigtime_config.net_dhcp_enable = true;
+
     // If not using DHCP, set details from config:
     if(!bigtime_config.net_dhcp_enable)
     {
@@ -62,20 +64,30 @@ int main(void) {
     chThdCreateStatic(waUsbSer, sizeof(waUsbSer), NORMALPRIO, UsbSerThread,
                       NULL);
 
+    display_init();
     while(1)
     {
-        uint64_t ntpDateTime;
-        int result = get_ntp_timestamp("pool.ntp.org", &ntpDateTime);
-        if(result == SNTP_SUCCESS)
+        for(int i=0; i<10; i++)
         {
-            RTCDateTime rtcDateTime;
-            rtc_from_ntp(&rtcDateTime, ntpDateTime);
-            rtc_set(&rtcDateTime);
+            struct BCDTime faketime;
+            faketime.st = i;
+            display_time(&faketime, true);
+            chThdSleepMilliseconds(1000);
         }
-        struct BCDTime bcdTime;
-        rtc_get_bcd(&bcdTime);
-        display_time(&bcdTime, false);
     }
+
+//        uint64_t ntpDateTime;
+//        int result = get_ntp_timestamp("pool.ntp.org", &ntpDateTime);
+//        if(result == SNTP_SUCCESS)
+//        {
+//            RTCDateTime rtcDateTime;
+//            rtc_from_ntp(&rtcDateTime, ntpDateTime);
+//            rtc_set(&rtcDateTime);
+//        }
+//        struct BCDTime bcdTime;
+//        rtc_get_bcd(&bcdTime);
+//        display_time(&bcdTime, false);
+//    }
 
 //  /* Main thread is done now and can sleep forever. */
 //    chThdSleep(TIME_INFINITE);

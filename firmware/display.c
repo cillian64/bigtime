@@ -2,12 +2,7 @@
 #include "hal.h"
 #include "rtc.h"
 
-// Set the 7-segment digits. Each byte is packed as
-// Bit      7 6 5 4 3 2 1 0
-// Segment DP A B C D E F G
-void display_set(uint8_t *digits, uint8_t ndigits);
-
-static SPIDriver* display_spid = &SPID1;
+static SPIDriver *display_spid = &SPID1;
 static SPIConfig display_spi_cfg = {
     .end_cb = NULL,
     .ssport = GPIOB,
@@ -15,18 +10,36 @@ static SPIConfig display_spi_cfg = {
     .cr1 = SPI_CR1_BR_1 | SPI_CR1_BR_2,
 };
 
+// Display is laid out with DP at top left, segments:
+// .
+//  a
+// f b
+//  g
+// e c
+//  d
+
+// Shift register bits map to segments as follows:
+// 0 LSbit DP
+// 1       f
+// 2       a
+// 3       b
+// 4       g
+// 5       c
+// 6       d
+// 7 MSbit e
+
 // For each number 0-9, return the segments 0ABCDEFG
 static uint8_t display_font[10] = {
-    0b01111110,  // 0
-    0b00110000,  // 1
-    0b01101101,  // 2
-    0b01111001,  // 3
-    0b00110011,  // 4
-    0b01011011,  // 5
-    0b01011111,  // 6
-    0b01110000,  // 7
-    0b01111111,  // 8
-    0b01111011,  // 9
+    0b11101110,  // 0
+    0b00101000,  // 1
+    0b11011100,  // 2
+    0b01111100,  // 3
+    0b00111010,  // 4
+    0b01110110,  // 5
+    0b11110110,  // 6
+    0b00101100,  // 7
+    0b11111110,  // 8
+    0b01111110,  // 9
 };
 
 void display_init(void)
@@ -39,12 +52,14 @@ void display_init(void)
 void display_time(struct BCDTime *bcdTime, bool has_seconds)
 {
     uint8_t digits[6];
-    digits[5] = display_font[bcdTime->ht];
-    digits[4] = display_font[bcdTime->hu];
-    digits[3] = display_font[bcdTime->mnt];
-    digits[2] = display_font[bcdTime->mnu];
-    digits[1] = display_font[bcdTime->st];
-    digits[0] = display_font[bcdTime->su];
+    // display_font converts a digit into 7-segment format
+    // with the bits in the right order for this board.
+    digits[0] = display_font[bcdTime->ht];
+    digits[1] = display_font[bcdTime->hu];
+    digits[2] = display_font[bcdTime->mnt];
+    digits[3] = display_font[bcdTime->mnu];
+    digits[4] = display_font[bcdTime->st];
+    digits[5] = display_font[bcdTime->su];
 
     // Set DP in the middle:
     bcdTime->hu |= 0b10000000;
@@ -57,18 +72,11 @@ void display_time(struct BCDTime *bcdTime, bool has_seconds)
 void display_set(uint8_t *digits, uint8_t ndigits)
 {
     uint8_t tx_buf;
+    spiStart(display_spid, &display_spi_cfg);
     spiSelect(display_spid);
     for(int i=0; i<ndigits; i++)
     {
-        // Remap from segments to board order:
-        tx_buf |= (digits[i] & 0b10000000) >> 7;
-        tx_buf |= (digits[i] & 0b01000000) >> 1;
-        tx_buf |= (digits[i] & 0b00100000) << 1;
-        tx_buf |= (digits[i] & 0b00010000) >> 3;
-        tx_buf |= (digits[i] & 0b00001000) >> 1;
-        tx_buf |= (digits[i] & 0b00000100) << 1;
-        tx_buf |= (digits[i] & 0b00000010) << 4;
-        tx_buf |= (digits[i] & 0b00000001) << 4;
+        tx_buf = digits[i];
         spiSend(display_spid, 1, &tx_buf);
     }
     spiUnselect(display_spid);
