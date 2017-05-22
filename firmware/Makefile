@@ -230,7 +230,7 @@ include $(RULESPATH)/rules.mk
 ##############################################################################
 # M3Debug flashing via GDB
 #
-BMP_PORT = $(wildcard /dev/serial/by-id/usb-Black_Sphere_Technologies_Black_Magic_Probe_*-if00)
+BMP_PORT = $(wildcard /dev/cu.usbmodem*1)
 flash: build/$(PROJECT).elf $(OUTFILES)
 	arm-none-eabi-gdb --batch \
 		              -ex 'target extended-remote $(BMP_PORT)' \
@@ -245,6 +245,16 @@ debug: build/$(PROJECT).elf $(OUTFILES)
 		              -ex 'monitor swdp_scan' \
 					  -ex "attach 1" \
 					  -ex "file build/$(PROJECT).elf"
+
+power:
+	arm-none-eabi-gdb --batch \
+		              -ex 'target extended-remote $(BMP_PORT)' \
+					  -ex 'monitor tpwr enable'
+
+unpower:
+	arm-none-eabi-gdb --batch \
+		              -ex 'target extended-remote $(BMP_PORT)' \
+					  -ex 'monitor tpwr disable'
 
 #
 # End BMP flashing

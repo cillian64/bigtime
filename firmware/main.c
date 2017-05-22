@@ -14,8 +14,8 @@
 #include "lwip/dns.h"
 
 #include "rom.h"
-#include "display.h"
 #include "rtc.h"
+#include "display.h"
 #include "sntp.h"
 #include "usb.h"
 #include "config.h"
@@ -24,8 +24,16 @@ static THD_WORKING_AREA(waUsbSer, 0x100);
 
 int main(void) {
     uint8_t mac_addr[6];
-    lwipthread_opts_t lwipopts;
-    lwipopts.macaddress = mac_addr; // Pointer to array, set layer
+    struct ip_addr address, netmask, gateway;
+    IP4_ADDR(&address, 0, 0, 0, 0);
+    IP4_ADDR(&netmask, 255, 255, 255, 255);
+    IP4_ADDR(&gateway, 0, 0, 0, 0);
+    lwipthread_opts_t lwipopts = {
+        .macaddress = mac_addr,
+        .address = address.addr,
+        .netmask = netmask.addr,
+        .gateway = gateway.addr,
+    };
 
     /* Initialise ChibiOS */
     halInit();
@@ -33,6 +41,8 @@ int main(void) {
 
     /* Read our MAC address from the EEPROM */
     rom_get_eui48(mac_addr);
+
+    bigtime_config.net_dhcp_enable = true;
 
     // If not using DHCP, set details from config:
     if(!bigtime_config.net_dhcp_enable)
@@ -54,20 +64,30 @@ int main(void) {
     chThdCreateStatic(waUsbSer, sizeof(waUsbSer), NORMALPRIO, UsbSerThread,
                       NULL);
 
+    display_init();
     while(1)
     {
-        uint64_t ntpDateTime;
-        int result = get_ntp_timestamp("pool.ntp.org", &ntpDateTime);
-        if(result == SNTP_SUCCESS)
+        for(int i=0; i<10; i++)
         {
-            RTCDateTime rtcDateTime;
-            rtc_from_ntp(&rtcDateTime, ntpDateTime);
-            rtc_set(&rtcDateTime);
+            struct BCDTime faketime;
+            faketime.st = i;
+            display_time(&faketime, true);
+            chThdSleepMilliseconds(1000);
         }
-        struct BCDTime bcdTime;
-        rtc_get_bcd(&bcdTime);
-        display_time(&bcdTime, false);
     }
+
+//        uint64_t ntpDateTime;
+//        int result = get_ntp_timestamp("pool.ntp.org", &ntpDateTime);
+//        if(result == SNTP_SUCCESS)
+//        {
+//            RTCDateTime rtcDateTime;
+//            rtc_from_ntp(&rtcDateTime, ntpDateTime);
+//            rtc_set(&rtcDateTime);
+//        }
+//        struct BCDTime bcdTime;
+//        rtc_get_bcd(&bcdTime);
+//        display_time(&bcdTime, false);
+//    }
 
 //  /* Main thread is done now and can sleep forever. */
 //    chThdSleep(TIME_INFINITE);
