@@ -24,31 +24,10 @@ static uint8_t days_in_month(uint8_t month, uint16_t year);
 
 void rtc_set(RTCDateTime *rtcDateTime)
 {
-    // First use rtcSetTime to set date and time to the nearest second
     rtcSetTime(&RTCD1, rtcDateTime);
 
-    // Now do sub-second synchronisation
-    syssts_t sts = osalSysGetStatusAndLockX();
-    while(((RTCD1.rtc->ISR & RTC_ISR_RSF) == 0)
-          || ((RTCD1.rtc->ISR & RTC_ISR_SHPF) != 0));
-    uint16_t ss = RTCD1.rtc->SSR & 0x0000ffff;
-    uint16_t prediv_s = RTCD1.rtc->PRER & 0x0000ffff;
-    // The next part is fixed point. The float equivalent is:
-    // float actual_second = (prediv_s - ss) / (prediv_s + 1);
-    // float desire_second = (rtcDateTime->millisecond % 1000) / 1000;
-    //     delay += 1.0;
-    // RTCD1.rtc->RTC_SHIFTR |= (uint16_t)(delay * (prediv_s + 1));
-    uint16_t current_ss  = (prediv_s - ss);
-    uint16_t desire_ss =
-        (uint32_t)rtcDateTime->millisecond % 1000u * (prediv_s + 1) / 1000u;
-    int32_t delay = current_ss - desire_ss;
-    if(delay < 0)
-    {
-        RTCD1.rtc->SHIFTR |= RTC_SHIFTR_ADD1S;
-        delay += prediv_s + 1;
-    }
-    RTCD1.rtc->SHIFTR |= (uint16_t)delay;
-    osalSysRestoreStatusX(sts);
+    // If you cared, you could do sub-second sync here.
+    // See c7b82ad2eee0d093c1cfb0967da943a2d6f5f835
 }
 
 void rtc_get_bcd(struct BCDTime *bcdTime)
