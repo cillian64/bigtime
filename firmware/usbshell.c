@@ -260,12 +260,8 @@ static void cmd_show(BaseSequentialStream *chp, int argc, char *argv[]) {
              bigtime_config.ntp_interval);
     chprintf(chp, "\r\n");
 
-    chprintf(chp, "disp_flash_second. %s\r\n",
-             bigtime_config.disp_flash_second ? "true" : "false");
     chprintf(chp, "disp_sync......... %s\r\n",
              bigtime_config.disp_sync ? "true" : "false");
-    chprintf(chp, "disp_has_seconds.. %s\r\n",
-             bigtime_config.disp_has_seconds ? "true" : "false");
     chprintf(chp, "disp_auto_bst..... %s\r\n",
              bigtime_config.disp_auto_bst ? "true" : "false");
 }
@@ -307,12 +303,8 @@ static void cmd_set(BaseSequentialStream *chp, int argc, char *argv[]) {
         strncpy(bigtime_config.ntp_server3, argv[1], MAX_FQDN_LEN);
     else if(strcmp(argv[0], "ntp_interval") == 0)
         bigtime_config.ntp_interval = atoi(argv[1]);
-    else if(strcmp(argv[0], "disp_flash_second") == 0)
-        bigtime_config.disp_flash_second = deformat_bool(chp, argv[1]);
     else if(strcmp(argv[0], "disp_sync") == 0)
         bigtime_config.disp_sync = deformat_bool(chp, argv[1]);
-    else if(strcmp(argv[0], "disp_has_seconds") == 0)
-        bigtime_config.disp_has_seconds = deformat_bool(chp, argv[1]);
     else if(strcmp(argv[0], "disp_auto_bst") == 0)
         bigtime_config.disp_auto_bst = deformat_bool(chp, argv[1]);
 }

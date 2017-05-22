@@ -70,8 +70,11 @@ int main(void) {
         for(int i=0; i<10; i++)
         {
             struct BCDTime faketime;
-            faketime.st = i;
-            display_time(&faketime, true);
+            faketime.ht = i;
+            faketime.hu = i;
+            faketime.mnt = i;
+            faketime.mnu = i;
+            display_time(&faketime);
             chThdSleepMilliseconds(1000);
         }
     }

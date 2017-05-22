@@ -45,36 +45,28 @@ static uint8_t display_font[10] = {
 void display_init(void)
 {
     spiStart(display_spid, &display_spi_cfg);
-    uint8_t digits[6] = {0};
-    display_set(digits, 6);
+    uint8_t digits[4] = {0};
+    display_set(digits);
 }
 
-void display_time(struct BCDTime *bcdTime, bool has_seconds)
+void display_time(struct BCDTime *bcdTime)
 {
-    uint8_t digits[6];
+    uint8_t digits[4];
     // display_font converts a digit into 7-segment format
     // with the bits in the right order for this board.
     digits[0] = display_font[bcdTime->ht];
     digits[1] = display_font[bcdTime->hu];
     digits[2] = display_font[bcdTime->mnt];
     digits[3] = display_font[bcdTime->mnu];
-    digits[4] = display_font[bcdTime->st];
-    digits[5] = display_font[bcdTime->su];
-
-    // Set DP in the middle:
-    bcdTime->hu |= 0b10000000;
-    if(has_seconds)
-        display_set(digits, 6);
-    else
-        display_set(digits+2, 4);
+    display_set(digits);
 }
 
-void display_set(uint8_t *digits, uint8_t ndigits)
+void display_set(uint8_t *digits)
 {
     uint8_t tx_buf;
     spiStart(display_spid, &display_spi_cfg);
     spiSelect(display_spid);
-    for(int i=0; i<ndigits; i++)
+    for(int i=0; i < 4; i++)
     {
         tx_buf = digits[i];
         spiSend(display_spid, 1, &tx_buf);

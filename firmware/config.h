@@ -20,9 +20,7 @@ typedef struct bigtime_config_t {
     char ntp_server3[MAX_FQDN_LEN];
     uint16_t ntp_interval;
 
-    bool disp_flash_second;
     bool disp_sync;
-    bool disp_has_seconds;
     bool disp_auto_bst;
 } bigtime_config_t;
 extern bigtime_config_t bigtime_config;
