@@ -127,7 +127,7 @@ static bool is_leap_year(uint16_t year)
     if(year % 100 != 0)
         return true;
     else
-        return year % 100;
+        return year % 400 == 0;
 }
 
 uint16_t days_in_year(uint16_t year)
