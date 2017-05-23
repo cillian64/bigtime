@@ -13,7 +13,7 @@
 #define RTC_TR_ST_OFFSET                    4
 #define RTC_TR_SU_OFFSET                    0
 
-// Is the given year (AD) a leap year? Doesn't handle century non-leap years
+// Is the given year (AD) a leap year?
 static bool is_leap_year(uint16_t year);
 
 // Give the number of days in a given year.  Year is in years AD.
@@ -70,7 +70,7 @@ void rtc_from_ntp(RTCDateTime *rtcOut, uint64_t ntpIn)
 
     // Count years from 1980 to beginning of this year
     rtcOut->year = 0;
-    while(secs > days_in_year(1980+rtcOut->year)*24u*60u*60u)
+    while(secs >= days_in_year(1980+rtcOut->year)*24u*60u*60u)
     {
         secs -= days_in_year(1980+rtcOut->year)*24*60*60;
         rtcOut->year += 1;
@@ -78,14 +78,14 @@ void rtc_from_ntp(RTCDateTime *rtcOut, uint64_t ntpIn)
 
     // Count months in the current year up to this month
     rtcOut->month = 1;
-    while(secs > days_in_month(rtcOut->month, rtcOut->year)*24*60*60)
+    while(secs >= days_in_month(rtcOut->month, 1980 + rtcOut->year)*24*60*60)
     {
-        secs -= days_in_month(rtcOut->month, rtcOut->year)*24*60*60;
+        secs -= days_in_month(rtcOut->month, 1980 + rtcOut->year)*24*60*60;
         rtcOut->month += 1;
     }
 
     // Days in the current month up to start of today
-    rtcOut->day = 2 + secs / (24*60*60);
+    rtcOut->day = 1 + secs / (24*60*60);
     secs = secs % (24*60*60);
 
     // And the time-of-day in milliseconds
@@ -100,14 +100,18 @@ uint64_t ntp_from_rtc(RTCDateTime *rtcDateTime)
 {
     uint32_t secs = rtcDateTime->millisecond / 1000;
 
+    // Add up time in days before this one, this month
+    for(int day = 1; day < rtcDateTime->day; day++)
+        secs += 24 * 60 * 60;
+
     // Add up time in months this year.
     // Time in rtcDateTime is since 1980
-    for(int i=0; i < rtcDateTime->month; i++)
-        secs += days_in_month(i, 1980+rtcDateTime->year) * 24 * 60 * 60;
+    for(int month = 1; month < rtcDateTime->month; month++)
+        secs += days_in_month(month, 1980 + rtcDateTime->year) * 24 * 60 * 60;
 
     // Add up time in years before this one.  NTP time is since 1900
-    for(int i=1900; i<rtcDateTime->year; i++)
-        secs += days_in_year(1900+i) * 24 * 60 * 60;
+    for(int year = 1900; year < 1980 + rtcDateTime->year; year++)
+        secs += days_in_year(year) * 24 * 60 * 60;
 
     // Lowest 32-bits of NTP stamp holds binary fraction seconds
     uint16_t millis = rtcDateTime->millisecond % 1000;
@@ -118,7 +122,12 @@ uint64_t ntp_from_rtc(RTCDateTime *rtcDateTime)
 
 static bool is_leap_year(uint16_t year)
 {
-    return (year % 4 == 0) ? true : false;
+    if(year % 4 != 0)
+        return false;
+    if(year % 100 != 0)
+        return true;
+    else
+        return year % 100;
 }
 
 uint16_t days_in_year(uint16_t year)
