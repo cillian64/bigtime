@@ -278,6 +278,44 @@ static bool deformat_bool(BaseSequentialStream *chp, char *val)
     return false;
 }
 
+// Print the day of week, i.e. "Monday"
+static void cmd_dow(BaseSequentialStream *chp, int argc, char *argv[]) {
+    (void)argv;
+    if(argc != 0) {
+        chprintf(chp, "Usage: dow\t\n");
+        return;
+    }
+    RTCDateTime rtcDateTime;
+    rtcGetTime(&RTCD1, &rtcDateTime);
+    switch(rtcDateTime.dayofweek) {
+        case RTC_DAY_MONDAY:
+            chprintf(chp, "Monday\r\n");
+            break;
+        case RTC_DAY_TUESDAY:
+            chprintf(chp, "Tuesday\r\n");
+            break;
+        case RTC_DAY_WEDNESDAY:
+            chprintf(chp, "Wednesday\r\n");
+            break;
+        case RTC_DAY_THURSDAY:
+            chprintf(chp, "Thursday\r\n");
+            break;
+        case RTC_DAY_FRIDAY:
+            chprintf(chp, "Friday\r\n");
+            break;
+        case RTC_DAY_SATURDAY:
+            chprintf(chp, "Saturday\r\n");
+            break;
+        case RTC_DAY_SUNDAY:
+            chprintf(chp, "Sunday\r\n");
+            break;
+        default:
+            chprintf(chp, "Caturday\r\n");
+            break;
+    }
+}
+
+
 // set command: Set configuration items in memory
 static void cmd_set(BaseSequentialStream *chp, int argc, char *argv[]) {
     if(argc != 2) {
@@ -327,6 +365,7 @@ static const ShellCommand commands[] = {
     {"datetime", cmd_datetime},
     {"epoch", cmd_epoch},
     {"reboot", cmd_reboot},
+    {"dow", cmd_dow},
     {NULL, NULL}
 };
 
