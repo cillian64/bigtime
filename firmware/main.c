@@ -42,7 +42,8 @@ int main(void) {
     /* Read our MAC address from the EEPROM */
     rom_get_eui48(mac_addr);
 
-    bigtime_config.net_dhcp_enable = true;
+    // Load config from flash
+    config_load();
 
     // If not using DHCP, set details from config:
     if(!bigtime_config.net_dhcp_enable)
