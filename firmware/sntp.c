@@ -27,7 +27,7 @@ uint64_t ntoh64(uint64_t in)
 }
 
 const int dst_ntp_port = 123;
-const int src_ntp_port = 1337;
+const int src_ntp_port = 123;
 
 #define NTP_FLAG_LEAP_MASK      0xc0 // 0b11000000
 #define NTP_FLAG_LEAP_SHIFT     6
@@ -91,17 +91,13 @@ int ntp_exchange(const char* host, int port, struct ntp_packet *tx,
     if (sockfd < 0)
         return SNTP_NETWORK;
 
-    // Set a 1 second timeout
-    struct timeval rcv_timeo;
-    rcv_timeo.tv_sec = 1;
-    rcv_timeo.tv_usec = 0;
-    setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &rcv_timeo,
-            sizeof(rcv_timeo));
-
     // Resolve the server hostname
     resolv = gethostbyname(host);
     if (resolv == NULL)
+    {
+        close(sockfd);
         return SNTP_NETWORK;
+    }
 
     // Build the destination address
     memset(&dst_addr, 0, sizeof(dst_addr));
@@ -120,13 +116,35 @@ int ntp_exchange(const char* host, int port, struct ntp_packet *tx,
 
     // Bind to socket
     if(bind(sockfd, (struct sockaddr*)&src_addr, sizeof(src_addr)) < 0)
+    {
+        close(sockfd);
         return SNTP_NETWORK;
+    }
 
     // Send the message to the server
     result = sendto(sockfd, tx, sizeof(struct ntp_packet), 0,
                     (struct sockaddr *)&dst_addr, sizeof(dst_addr));
     if (result < 0)
+    {
+        close(sockfd);
         return SNTP_NETWORK;
+    }
+
+    // Blocking receive with timeout
+    struct timeval timeout;
+    timeout.tv_sec = 1;
+    timeout.tv_usec = 0;
+    fd_set read_fds;
+    FD_ZERO(&read_fds);
+    FD_SET(sockfd, &read_fds);
+    int ret = lwip_select(sockfd+1, &read_fds, NULL, NULL, &timeout);
+    if(ret < 0)
+        chSysHalt("Error from lwip_select");
+    else if(ret == 0)
+    {
+        close(sockfd);
+        return SNTP_NETWORK;
+    }
 
     dst_len = (socklen_t)sizeof(dst_addr);
     result = recvfrom(sockfd, rx, sizeof(struct ntp_packet), 0,
@@ -136,6 +154,7 @@ int ntp_exchange(const char* host, int port, struct ntp_packet *tx,
     // Packet to machine endian-ness
     ntoh_ntp(rx);
 
+    close(sockfd);
     if (result < 0)
         return SNTP_NETWORK;
     return SNTP_SUCCESS;
