@@ -108,7 +108,7 @@ static inline bool flash_wait_write(void) {
 
 void config_save(void)
 {
-    flash_write(FLASH_CFG_ADDR, (uint32_t*)&bigtime_config,
+    flash_write((uint32_t*)&bigtime_config, FLASH_CFG_ADDR,
                 sizeof(bigtime_config));
 }
 
