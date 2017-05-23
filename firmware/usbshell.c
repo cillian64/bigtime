@@ -207,7 +207,7 @@ static void cmd_epoch(BaseSequentialStream *chp, int argc, char *argv[]) {
     RTCDateTime rtcDateTime;
     rtcGetTime(&RTCD1, &rtcDateTime);
     uint64_t ntpDateTime = ntp_from_rtc(&rtcDateTime);
-    chprintf(chp, "%u.%03u", ntpDateTime >> 32,
+    chprintf(chp, "%u.%03u\n", ntpDateTime >> 32,
              ((ntpDateTime & 0xffffffff) * 1000) >> 32);
 }
 
@@ -308,6 +308,8 @@ static void cmd_set(BaseSequentialStream *chp, int argc, char *argv[]) {
         bigtime_config.disp_sync = deformat_bool(chp, argv[1]);
     else if(strcmp(argv[0], "disp_auto_bst") == 0)
         bigtime_config.disp_auto_bst = deformat_bool(chp, argv[1]);
+    else
+        chprintf(chp, "Unknown setting `%s`\r\n", argv[0]);
 }
 
 
