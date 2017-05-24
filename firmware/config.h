@@ -18,7 +18,7 @@ typedef struct bigtime_config_t {
     char ntp_server1[MAX_FQDN_LEN];
     char ntp_server2[MAX_FQDN_LEN];
     char ntp_server3[MAX_FQDN_LEN];
-    uint16_t ntp_interval;
+    uint16_t ntp_sync_time;
 
     bool disp_sync;
     bool disp_auto_bst;
@@ -28,12 +28,7 @@ extern bigtime_config_t bigtime_config;
 typedef struct bigtime_state_t {
     bool syncing;
     bool force_sync;
-    int ntp_server1_status;
-    RTCDateTime ntp_server1_queried;
-    int ntp_server2_status;
-    RTCDateTime ntp_server2_queried;
-    int ntp_server3_status;
-    RTCDateTime ntp_server3_queried;
+    RTCDateTime last_synced;
 } bigtime_state_t;
 extern bigtime_state_t bigtime_state;
 

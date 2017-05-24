@@ -40,6 +40,9 @@ int main(void) {
     halInit();
     chSysInit();
 
+    // Blank the display:
+    display_init();
+
     /* Read our MAC address from the EEPROM */
     rom_get_eui48(mac_addr);
 
@@ -62,6 +65,9 @@ int main(void) {
     // Initialise the state structure
     memset(&bigtime_state, 0, sizeof(bigtime_state));
 
+    // Force sync on boot:
+    bigtime_state.force_sync = true;
+
     // Start USB config shell and display thread
     chThdCreateStatic(waUsbSer, sizeof(waUsbSer), NORMALPRIO, UsbSerThread,
             NULL);
@@ -69,36 +75,82 @@ int main(void) {
             NULL);
 
 
-    while(1)
+    uint64_t ntpDateTime;
+    RTCDateTime rtcDateTime;
+    while(true)
     {
-        uint64_t ntpDateTime;
-        int result = SNTP_UNKNOWN;
-
         bigtime_state.syncing = true;
 
-        // Poll every 2s until we successfully sync to NTP.
-        while(result != SNTP_SUCCESS)
+        // Poll the NTP servers until we successfully sync.
+        while(true)
         {
-            result = get_ntp_timestamp(bigtime_config.ntp_server1,
-                                           &ntpDateTime);
-            chThdSleepMilliseconds(2000);
+            if(get_ntp_timestamp(bigtime_config.ntp_server1, &ntpDateTime)
+                    == SNTP_SUCCESS)
+                break;
+
+            if(get_ntp_timestamp(bigtime_config.ntp_server2, &ntpDateTime)
+                    == SNTP_SUCCESS)
+                break;
+
+            if(get_ntp_timestamp(bigtime_config.ntp_server3, &ntpDateTime)
+                    == SNTP_SUCCESS)
+                break;
+
+            // If none of the servers respond, wait for a period before trying
+            // again.  On cold boot or force sync, wait 5s, otherwise wait 5
+            // minutes
+            if(bigtime_state.force_sync)
+                chThdSleepMilliseconds(5 * 1000);
+            else
+                for(int i=0; i<5*60; i++)
+                    if(bigtime_state.force_sync)
+                        break;
+                    else
+                        chThdSleepMilliseconds(1000);
         }
 
         // Set the RTC from the NTP response.
-        RTCDateTime rtcDateTime;
         rtc_from_ntp(&rtcDateTime, ntpDateTime);
         rtc_set(&rtcDateTime);
-
         bigtime_state.syncing = false;
+
+        // Set time last synced to rtcDateTime
+        bigtime_state.last_synced = rtcDateTime;
+
+        // And reset the force_sync flag.
+        bigtime_state.force_sync = false;
+
+        // Pause here otherwise we accidentally sync several times
+        chThdSleepMilliseconds(3000);
+
         // And wait until it's time for our next sync
-        for(int i=0; i < bigtime_config.ntp_interval * 60; i++)
+        while(true)
         {
-            chThdSleepMilliseconds(1000);
+            rtcGetTime(&RTCD1, &rtcDateTime);
             if(bigtime_state.force_sync)
-            {
-                bigtime_state.force_sync = false;
                 break;
+
+            // Millisecond-of-day of sync time:
+            uint32_t sync_millisecond = 0;
+            sync_millisecond += bigtime_config.ntp_sync_time / 100 * 3600000u;
+            sync_millisecond += (bigtime_config.ntp_sync_time % 100) * 60000u;
+
+            // If last sync was on a different day to today:
+            if((bigtime_state.last_synced.year != rtcDateTime.year) ||
+               (bigtime_state.last_synced.month != rtcDateTime.month) ||
+               (bigtime_state.last_synced.day != rtcDateTime.day))
+            {
+                // If time-of-day is after the sync time:
+                if(rtcDateTime.millisecond > sync_millisecond)
+                    break;  // Sync
             }
+            else
+                // Last sync was today.
+                if(bigtime_state.last_synced.millisecond <= sync_millisecond
+                    && rtcDateTime.millisecond > sync_millisecond)
+                    break;  // Sync
+
+            chThdSleepMilliseconds(1000);
         }
     }
 }

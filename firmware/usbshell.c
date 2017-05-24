@@ -137,31 +137,6 @@ static void format_rtcdatetime(BaseSequentialStream *chp,
              rtcDateTime->millisecond % 1000);
 }
 
-// Pretty-print the NTP status codes returned by get_ntp_timestamp
-static void format_ntp_status(BaseSequentialStream *chp, int ntp_status)
-{
-    switch(ntp_status) {
-        case SNTP_UNKNOWN:
-            chprintf(chp, "Unknown\n");
-            break;
-        case SNTP_SUCCESS:
-            chprintf(chp, "Success\n");
-            break;
-        case SNTP_NETWORK:
-            chprintf(chp, "Network error\n");
-            break;
-        case SNTP_KOD_DENY:
-            chprintf(chp, "Kiss of Death: DENY or RSTR\n");
-            break;
-        case SNTP_KOD_RATE:
-            chprintf(chp, "Kiss of Death: RATE\n");
-            break;
-        case SNTP_KOD_OTHER:
-            chprintf(chp, "Kiss of Death: Unrecognised code\n");
-            break;
-    }
-}
-
 // status: Show current system status (ie print state struct)
 static void cmd_status(BaseSequentialStream *chp, int argc, char *argv[]) {
     (void)argv;
@@ -171,18 +146,8 @@ static void cmd_status(BaseSequentialStream *chp, int argc, char *argv[]) {
     }
     chprintf(chp, "NTP syncing............ %s\r\n",
             bigtime_state.syncing ? "Yes" : "No");
-    chprintf(chp, "NTP server 1 status.... ");
-    format_ntp_status(chp, bigtime_state.ntp_server1_status);
-    chprintf(chp, "NTP server 1 queried... ");
-    format_rtcdatetime(chp, &bigtime_state.ntp_server1_queried);
-    chprintf(chp, "NTP server 2 status.... ");
-    format_ntp_status(chp, bigtime_state.ntp_server2_status);
-    chprintf(chp, "NTP server 2 queried... ");
-    format_rtcdatetime(chp, &bigtime_state.ntp_server2_queried);
-    chprintf(chp, "NTP server 3 status.... ");
-    format_ntp_status(chp, bigtime_state.ntp_server3_status);
-    chprintf(chp, "NTP server 3 queried... ");
-    format_rtcdatetime(chp, &bigtime_state.ntp_server3_queried);
+    chprintf(chp, "Last successful sync... ");
+    format_rtcdatetime(chp, &bigtime_state.last_synced);
 }
 
 // datetime: Show datetime: YYYY-MM-DD HH:MM:SS.ssss
@@ -255,8 +220,8 @@ static void cmd_show(BaseSequentialStream *chp, int argc, char *argv[]) {
     chprintf(chp, "ntp_server1....... %s\r\n", bigtime_config.ntp_server1);
     chprintf(chp, "ntp_server2....... %s\r\n", bigtime_config.ntp_server2);
     chprintf(chp, "ntp_server3....... %s\r\n", bigtime_config.ntp_server3);
-    chprintf(chp, "ntp_interval...... %u minutes\r\n",
-             bigtime_config.ntp_interval);
+    chprintf(chp, "ntp_sync_time..... %04u\r\n",
+            bigtime_config.ntp_sync_time);
     chprintf(chp, "\r\n");
 
     chprintf(chp, "disp_sync......... %s\r\n",
@@ -338,8 +303,8 @@ static void cmd_set(BaseSequentialStream *chp, int argc, char *argv[]) {
         strncpy(bigtime_config.ntp_server2, argv[1], MAX_FQDN_LEN);
     else if(strcmp(argv[0], "ntp_server3") == 0)
         strncpy(bigtime_config.ntp_server3, argv[1], MAX_FQDN_LEN);
-    else if(strcmp(argv[0], "ntp_interval") == 0)
-        bigtime_config.ntp_interval = atoi(argv[1]);
+    else if(strcmp(argv[0], "ntp_sync_time") == 0)
+        bigtime_config.ntp_sync_time = atoi(argv[1]);
     else if(strcmp(argv[0], "disp_sync") == 0)
         bigtime_config.disp_sync = deformat_bool(chp, argv[1]);
     else if(strcmp(argv[0], "disp_auto_bst") == 0)
