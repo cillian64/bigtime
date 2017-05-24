@@ -52,15 +52,21 @@ void display_init(void)
 
 void display_time(uint8_t ht, uint8_t hu, uint8_t mnt, uint8_t mnu, bool DP)
 {
-    uint8_t digits[4];
+    uint8_t digits[4] = {0};
     // display_font converts a digit into 7-segment format
     // with the bits in the right order for this board.
-    digits[0] = display_font[ht];
+    // Hide time if sync is forced, to inhibit showing time when unsynced, i.e.
+    // on boot.
+    if(!bigtime_state.force_sync)
+    {
+        digits[0] = display_font[ht];
+        digits[1] = display_font[hu];
+        digits[2] = display_font[mnt];
+        digits[3] = display_font[mnu];
+    }
+    // DP is top left decimal point, indicating syncing
     if(DP)
         digits[0] |= 0x01;
-    digits[1] = display_font[hu];
-    digits[2] = display_font[mnt];
-    digits[3] = display_font[mnu];
     display_set(digits);
 }
 
