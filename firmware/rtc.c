@@ -30,26 +30,6 @@ void rtc_set(RTCDateTime *rtcDateTime)
     // See c7b82ad2eee0d093c1cfb0967da943a2d6f5f835
 }
 
-void rtc_get_bcd(struct BCDTime *bcdTime)
-{
-    uint32_t tr;
-    syssts_t sts;
-
-    // Enter a re-entrant critical zone
-    sts = osalSysGetStatusAndLockX();
-    // Sync with the RTC
-    while((RTCD1.rtc->ISR & RTC_ISR_RSF) == 0);
-    tr = RTCD1.rtc->TR;
-    osalSysRestoreStatusX(sts);
-
-    bcdTime->ht = (tr >> RTC_TR_HT_OFFSET) & 3;
-    bcdTime->hu = (tr >> RTC_TR_HU_OFFSET) & 15;
-    bcdTime->mnt = (tr >> RTC_TR_MNT_OFFSET) & 7;
-    bcdTime->mnu = (tr >> RTC_TR_MNU_OFFSET) & 15;
-    bcdTime->st = (tr >> RTC_TR_ST_OFFSET) & 7;
-    bcdTime->su = (tr >> RTC_TR_SU_OFFSET) & 15;
-}
-
 int32_t rtc_delta(RTCDateTime *rtcBegin, RTCDateTime *rtcEnd)
 {
     // Easiest way to do this is convert both times into an ntp timestamp,
@@ -156,23 +136,13 @@ uint8_t days_in_month(uint8_t month, uint16_t year)
     return 0; // This can never happen.
 }
 
-bool is_bst(uint64_t ntpDateTime)
+bool is_bst(RTCDateTime *rtcDateTime)
 {
-    // We need to calculate the current day of week
-    uint32_t secs = ntpDateTime >> 32;
-    // Days since 0000 1st January 1900:
-    uint32_t days = secs / (24*60*60);
-    // 1st January 1900 was a Monday, which we'll denote day 0, so sunday=6
-    uint8_t day_of_week = days % 7;
-    // Find what month it is, via an RTCDateTime.
-    RTCDateTime rtcDateTime;
-    rtc_from_ntp(&rtcDateTime, ntpDateTime);
-
     // The UK observes BST from 0100 UTC on the last Sunday of March
     // until 0100 UTC on the last Sunday of October.
-    if(rtcDateTime.month < 3) {
+    if(rtcDateTime->month < 3) {
         return false;
-    } else if(rtcDateTime.month == 3) {
+    } else if(rtcDateTime->month == 3) {
         // The earliest possible last sunday in march is the 25th.
         // The last day of March is the 31st.
         // If we're before the 25th March it's not BST
@@ -182,32 +152,33 @@ bool is_bst(uint64_t ntpDateTime)
         //   Is there a sunday in the remaining days of march after today?
         //     Yes? It's not BST
         //     No? It is BST
-        if(rtcDateTime.day < 25) {
+        if(rtcDateTime->day < 25) {
             return false;
-        } else if(day_of_week == 6) {  // It the last sunday in march!
-            if(rtcDateTime.millisecond >= 60*60*1000)
+        } else if(rtcDateTime->dayofweek == 7) {
+            // It the last sunday in march!
+            if(rtcDateTime->millisecond >= 60*60*1000)
                 return true;
             else
                 return false;
-        } else if(rtcDateTime.day + (6 - day_of_week) > 31) {
+        } else if(rtcDateTime->day + (7 - rtcDateTime->dayofweek) > 31) {
             // There are no more Sundays this march
             return true;
         } else {
             return false;
         }
-    } else if(rtcDateTime.month < 10) {
+    } else if(rtcDateTime->month < 10) {
         return true;
-    } else if(rtcDateTime.month == 10) {
+    } else if(rtcDateTime->month == 10) {
         // Same logic as March but inverted
-        if(rtcDateTime.day < 25) {
+        if(rtcDateTime->day < 25) {
             return true;
-        } else if(day_of_week == 6) {
-            if(rtcDateTime.millisecond >= 60*60*1000) {
+        } else if(rtcDateTime->dayofweek == 7) {
+            if(rtcDateTime->millisecond >= 60*60*1000) {
                 return false;
             } else {
                 return true;
             }
-        } else if(rtcDateTime.day + (6 - day_of_week) > 31) {
+        } else if(rtcDateTime->day + (7 - rtcDateTime->dayofweek) > 31) {
             // There are no more Sundays this march
             return false;
         } else {

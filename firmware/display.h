@@ -10,7 +10,7 @@ void display_init(void);
 
 // Display the time from the BCD time struct.  DPs is an array of 4 bools
 // showing which Decimal Point indicators to illuminate.
-void display_time(struct BCDTime *bcdTime, bool DP);
+void display_time(uint8_t ht, uint8_t hu, uint8_t mnt, uint8_t mnu, bool DP);
 
 // Display all 4 digits, with segments in board-specific order:
 // Bit     7 6 5 4 3 2 1 0

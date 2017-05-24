@@ -50,17 +50,17 @@ void display_init(void)
     display_set(digits);
 }
 
-void display_time(struct BCDTime *bcdTime, bool DP)
+void display_time(uint8_t ht, uint8_t hu, uint8_t mnt, uint8_t mnu, bool DP)
 {
     uint8_t digits[4];
     // display_font converts a digit into 7-segment format
     // with the bits in the right order for this board.
-    digits[0] = display_font[bcdTime->ht];
+    digits[0] = display_font[ht];
     if(DP)
         digits[0] |= 0x01;
-    digits[1] = display_font[bcdTime->hu];
-    digits[2] = display_font[bcdTime->mnt];
-    digits[3] = display_font[bcdTime->mnu];
+    digits[1] = display_font[hu];
+    digits[2] = display_font[mnt];
+    digits[3] = display_font[mnu];
     display_set(digits);
 }
 
@@ -80,13 +80,30 @@ void display_set(uint8_t *digits)
 THD_FUNCTION(DisplayThread, arg)
 {
     (void)arg;
-    struct BCDTime bcdTime;
+    RTCDateTime rtcDateTime;
+    uint64_t ntpDateTime;
+    uint8_t ht, hu, mnt, mnu;
 
-    display_init();
     while(1)
     {
-        rtc_get_bcd(&bcdTime);
-        display_time(&bcdTime,
+        rtcGetTime(&RTCD1, &rtcDateTime);
+        // Apply BST if necessary
+        if(bigtime_config.disp_auto_bst && is_bst(&rtcDateTime))
+        {
+            ntpDateTime = ntp_from_rtc(&rtcDateTime);
+            ntpDateTime += ((uint64_t)3600 << 32);
+            rtc_from_ntp(&rtcDateTime, ntpDateTime);
+        }
+
+        // Convert calendar datetime to BCD
+        uint32_t minutes = rtcDateTime.millisecond / 1000 / 60;
+        ht = minutes / 60 / 10;
+        hu = (minutes / 60) % 10;
+        minutes %= 60;
+        mnt = minutes / 10;
+        mnu = minutes % 10;
+
+        display_time(ht, hu, mnt, mnu,
                 bigtime_state.syncing && bigtime_config.disp_sync);
         chThdSleepMilliseconds(1000);
     }

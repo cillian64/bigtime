@@ -5,15 +5,8 @@
 #include <time.h>
 #include <hal.h>
 
-struct BCDTime {
-    uint8_t ht, hu, mnt, mnu, st, su;
-};
-
 // Set the RTC to an RTCDateTime including sub-second sync
 void rtc_set(RTCDateTime *rtcDateTime);
-
-// Get the current RTC time in BCD form
-void rtc_get_bcd(struct BCDTime *bcdTime);
 
 // Find the difference in seconds between two RTCDateTimes: End - Begin
 int32_t rtc_delta(RTCDateTime *rtcBegin, RTCDateTime *rtcEnd);
@@ -25,7 +18,7 @@ void rtc_from_ntp(RTCDateTime *rtcOut, uint64_t ntpIn);
 // Convert an RTCDateTime to an NTP timestamp
 uint64_t ntp_from_rtc(RTCDateTime *rtcDateTime);
 
-// Calculate whether the given NTP timestamp is within British Summer Time
-bool is_bst(uint64_t ntpDateTime);
+// Calculate whether the given RTCDateTime is within British Summer Time
+bool is_bst(RTCDateTime *rtcDateTime);
 
 #endif
