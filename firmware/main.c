@@ -23,6 +23,15 @@
 static THD_WORKING_AREA(waUsbSer, 0x100);
 static THD_WORKING_AREA(waDisplay, 0x100);
 
+/* On hard fault, copy HARDFAULT_PSP to the sp reg so gdb can give a trace */
+void **HARDFAULT_PSP;
+register void *stack_pointer asm("sp");
+void HardFault_Handler(void) {
+    asm("mrs %0, psp" : "=r"(HARDFAULT_PSP) : :);
+    stack_pointer = HARDFAULT_PSP;
+    while(1);
+}
+
 int main(void) {
     uint8_t mac_addr[6];
     struct ip_addr address, netmask, gateway;
