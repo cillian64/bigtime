@@ -21,6 +21,7 @@
 #include "usbshell.h"
 
 static THD_WORKING_AREA(waUsbSer, 0x100);
+static THD_WORKING_AREA(waDisplay, 0x100);
 
 int main(void) {
     uint8_t mac_addr[6];
@@ -61,28 +62,43 @@ int main(void) {
     // Initialise the state structure
     memset(&bigtime_state, 0, sizeof(bigtime_state));
 
-    // Start USB config shell
+    // Start USB config shell and display thread
     chThdCreateStatic(waUsbSer, sizeof(waUsbSer), NORMALPRIO, UsbSerThread,
-                      NULL);
+            NULL);
+    chThdCreateStatic(waDisplay, sizeof(waDisplay), NORMALPRIO, DisplayThread,
+            NULL);
 
-    display_init();
-
-    uint64_t ntpDateTime;
-    int result = get_ntp_timestamp("pool.ntp.org", &ntpDateTime);
-    if(result == SNTP_SUCCESS)
-    {
-        RTCDateTime rtcDateTime;
-        rtc_from_ntp(&rtcDateTime, ntpDateTime);
-        rtc_set(&rtcDateTime);
-    }
-    else
-        chSysHalt("SNTP failed.");
 
     while(1)
     {
-        struct BCDTime bcdTime;
-        rtc_get_bcd(&bcdTime);
-        display_time(&bcdTime);
-        chThdSleepMilliseconds(1000);
+        uint64_t ntpDateTime;
+        int result = SNTP_UNKNOWN;
+
+        bigtime_state.syncing = true;
+
+        // Poll every 2s until we successfully sync to NTP.
+        while(result != SNTP_SUCCESS)
+        {
+            result = get_ntp_timestamp(bigtime_config.ntp_server1,
+                                           &ntpDateTime);
+            chThdSleepMilliseconds(2000);
+        }
+
+        // Set the RTC from the NTP response.
+        RTCDateTime rtcDateTime;
+        rtc_from_ntp(&rtcDateTime, ntpDateTime);
+        rtc_set(&rtcDateTime);
+
+        bigtime_state.syncing = false;
+        // And wait until it's time for our next sync
+        for(int i=0; i < bigtime_config.ntp_interval * 60; i++)
+        {
+            chThdSleepMilliseconds(1000);
+            if(bigtime_state.force_sync)
+            {
+                bigtime_state.force_sync = false;
+                break;
+            }
+        }
     }
 }

@@ -169,8 +169,8 @@ static void cmd_status(BaseSequentialStream *chp, int argc, char *argv[]) {
         chprintf(chp, "Usage: status\r\n");
         return;
     }
-    chprintf(chp, "Last sync time......... ");
-    format_rtcdatetime(chp, &bigtime_state.last_sync);
+    chprintf(chp, "NTP syncing............ %s\r\n",
+            bigtime_state.syncing ? "Yes" : "No");
     chprintf(chp, "NTP server 1 status.... ");
     format_ntp_status(chp, bigtime_state.ntp_server1_status);
     chprintf(chp, "NTP server 1 queried... ");
@@ -228,9 +228,7 @@ static void cmd_sync(BaseSequentialStream *chp, int argc, char *argv[]) {
         chprintf(chp, "Usage: sync\r\n");
         return;
     }
-    // Set the "last synced" time to 0, so the management thread thinks
-    // we need a sync ASAP.
-    memset(&bigtime_state.last_sync, 0, sizeof(bigtime_state.last_sync));
+    bigtime_state.force_sync = true;
 }
 
 // show command: Display current config (in memory)

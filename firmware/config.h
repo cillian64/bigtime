@@ -26,7 +26,8 @@ typedef struct bigtime_config_t {
 extern bigtime_config_t bigtime_config;
 
 typedef struct bigtime_state_t {
-    RTCDateTime last_sync;
+    bool syncing;
+    bool force_sync;
     int ntp_server1_status;
     RTCDateTime ntp_server1_queried;
     int ntp_server2_status;

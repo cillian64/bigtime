@@ -1,6 +1,7 @@
 #include "display.h"
 #include "hal.h"
 #include "rtc.h"
+#include "config.h"
 
 static SPIDriver *display_spid = &SPID1;
 static SPIConfig display_spi_cfg = {
@@ -49,12 +50,14 @@ void display_init(void)
     display_set(digits);
 }
 
-void display_time(struct BCDTime *bcdTime)
+void display_time(struct BCDTime *bcdTime, bool DP)
 {
     uint8_t digits[4];
     // display_font converts a digit into 7-segment format
     // with the bits in the right order for this board.
     digits[0] = display_font[bcdTime->ht];
+    if(DP)
+        digits[0] |= 0x01;
     digits[1] = display_font[bcdTime->hu];
     digits[2] = display_font[bcdTime->mnt];
     digits[3] = display_font[bcdTime->mnu];
@@ -72,4 +75,19 @@ void display_set(uint8_t *digits)
         spiSend(display_spid, 1, &tx_buf);
     }
     spiUnselect(display_spid);
+}
+
+THD_FUNCTION(DisplayThread, arg)
+{
+    (void)arg;
+    struct BCDTime bcdTime;
+
+    display_init();
+    while(1)
+    {
+        rtc_get_bcd(&bcdTime);
+        display_time(&bcdTime,
+                bigtime_state.syncing && bigtime_config.disp_sync);
+        chThdSleepMilliseconds(1000);
+    }
 }
