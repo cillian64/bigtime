@@ -109,13 +109,13 @@ static inline bool flash_wait_write(void) {
 void config_save(void)
 {
     flash_write((uint32_t*)&bigtime_config, FLASH_CFG_ADDR,
-                sizeof(bigtime_config));
+                sizeof(bigtime_config)/sizeof(uint32_t));
 }
 
 bool config_load(void)
 {
     bool crc = flash_read(FLASH_CFG_ADDR, (uint32_t*)&bigtime_config,
-                          sizeof(bigtime_config));
+                          sizeof(bigtime_config)/sizeof(uint32_t));
     if(!crc)
         memset(&bigtime_config, 0, sizeof(bigtime_config));
     return crc;
