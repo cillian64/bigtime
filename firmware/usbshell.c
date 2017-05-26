@@ -127,14 +127,15 @@ static void cmd_netinfo(BaseSequentialStream *chp, int argc, char *argv[]) {
 
 // Print a RTCDateTime like YYYY-MM-DD HH:MM:SS.ssss\n
 static void format_rtcdatetime(BaseSequentialStream *chp,
-                               RTCDateTime *rtcDateTime)
+                               RTCDateTime *rtcDateTime,
+                               const char* tz)
 {
-    chprintf(chp, "%04u-%02u-%02u %02u:%02u:%02u.%03u\n",
+    chprintf(chp, "%04u-%02u-%02u %02u:%02u:%02u %s\n",
              rtcDateTime->year + 1980, rtcDateTime->month, rtcDateTime->day,
              rtcDateTime->millisecond / 3600000,
              (rtcDateTime->millisecond % 3600000) / 60000,
              (rtcDateTime->millisecond % 60000) / 1000,
-             rtcDateTime->millisecond % 1000);
+             tz);
 }
 
 // status: Show current system status (ie print state struct)
@@ -147,7 +148,7 @@ static void cmd_status(BaseSequentialStream *chp, int argc, char *argv[]) {
     chprintf(chp, "NTP syncing............ %s\r\n",
             bigtime_state.syncing ? "Yes" : "No");
     chprintf(chp, "Last successful sync... ");
-    format_rtcdatetime(chp, &bigtime_state.last_synced);
+    format_rtcdatetime(chp, &bigtime_state.last_synced, "UTC");
 }
 
 // datetime: Show datetime: YYYY-MM-DD HH:MM:SS.ssss
@@ -159,7 +160,18 @@ static void cmd_datetime(BaseSequentialStream *chp, int argc, char *argv[]) {
     }
     RTCDateTime rtcDateTime;
     rtcGetTime(&RTCD1, &rtcDateTime);
-    format_rtcdatetime(chp, &rtcDateTime);
+    chprintf(chp, "RTC time: ");
+    format_rtcdatetime(chp, &rtcDateTime, "UTC");
+    const char* local_tz = "GMT";
+    if(bigtime_config.disp_auto_bst && is_bst(&rtcDateTime))
+    {
+        uint64_t ntpDateTime = ntp_from_rtc(&rtcDateTime);
+        ntpDateTime += (uint64_t)3600 << 32;
+        rtc_from_ntp(&rtcDateTime, ntpDateTime);
+        local_tz = "BST";
+    }
+    chprintf(chp, "Local: ");
+    format_rtcdatetime(chp, &rtcDateTime, local_tz);
 }
 
 // epoch: Show epoch time, seconds since 1900-01-01 00:00:00
@@ -220,7 +232,7 @@ static void cmd_show(BaseSequentialStream *chp, int argc, char *argv[]) {
     chprintf(chp, "ntp_server1....... %s\r\n", bigtime_config.ntp_server1);
     chprintf(chp, "ntp_server2....... %s\r\n", bigtime_config.ntp_server2);
     chprintf(chp, "ntp_server3....... %s\r\n", bigtime_config.ntp_server3);
-    chprintf(chp, "ntp_sync_time..... %04u\r\n",
+    chprintf(chp, "ntp_sync_time..... %04u UTC\r\n",
             bigtime_config.ntp_sync_time);
     chprintf(chp, "\r\n");
 
