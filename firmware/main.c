@@ -12,6 +12,7 @@
 #include "lwip/arch.h"
 #include "lwip/api.h"
 #include "lwip/dns.h"
+#include "lwip/netif.h"
 
 #include "rom.h"
 #include "rtc.h"
@@ -70,6 +71,7 @@ int main(void) {
 
     /* Initialise lwIP (automatically does DHCP if ip == 0.0.0.0) */
     lwipInit(&lwipopts);
+    netif_set_hostname(netif_default, "bigtime");
 
     // Initialise the state structure
     memset(&bigtime_state, 0, sizeof(bigtime_state));
