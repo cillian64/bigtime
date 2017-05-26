@@ -117,6 +117,17 @@ bool config_load(void)
     bool crc = flash_read(FLASH_CFG_ADDR, (uint32_t*)&bigtime_config,
                           sizeof(bigtime_config)/sizeof(uint32_t));
     if(!crc)
+    {
         memset(&bigtime_config, 0, sizeof(bigtime_config));
+        // Initialise configuration to sensible defaults
+        bigtime_config.net_dhcp_enable = true;
+        strcpy(bigtime_config.net_hostname, "bigtime");
+        strcpy(bigtime_config.ntp_server1, "ntp0.cl.cam.ac.uk");
+        strcpy(bigtime_config.ntp_server2, "ntp1a.cl.cam.ac.uk");
+        strcpy(bigtime_config.ntp_server3, "pool.ntp.org");
+        bigtime_config.ntp_sync_time = 143; // 01:43AM UTC
+        bigtime_config.disp_sync = true;
+        bigtime_config.disp_auto_bst = true;
+    }
     return crc;
 }
