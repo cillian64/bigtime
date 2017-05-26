@@ -9,6 +9,7 @@
 
 typedef struct bigtime_config_t {
     bool net_dhcp_enable;
+    char net_hostname[MAX_FQDN_LEN];
     ip_addr_t net_static_ip;
     ip_addr_t net_static_netmask;
     ip_addr_t net_static_gateway;

@@ -227,6 +227,7 @@ static void cmd_show(BaseSequentialStream *chp, int argc, char *argv[]) {
              ipaddr_ntoa(&bigtime_config.net_static_dns1));
     chprintf(chp, "net_static_dns2... %s\r\n",
              ipaddr_ntoa(&bigtime_config.net_static_dns2));
+    chprintf(chp, "net_hostname...... %s\r\n", bigtime_config.net_hostname);
     chprintf(chp, "\r\n");
 
     chprintf(chp, "ntp_server1....... %s\r\n", bigtime_config.ntp_server1);
@@ -309,6 +310,9 @@ static void cmd_set(BaseSequentialStream *chp, int argc, char *argv[]) {
         ipaddr_aton(argv[1], &bigtime_config.net_static_dns1);
     else if(strcmp(argv[0], "net_static_dns2") == 0)
         ipaddr_aton(argv[1], &bigtime_config.net_static_dns2);
+    else if(strcmp(argv[0], "net_hostname") == 0)
+        strncpy(bigtime_config.net_hostname, argv[1], MAX_FQDN_LEN);
+
     else if(strcmp(argv[0], "ntp_server1") == 0)
         strncpy(bigtime_config.ntp_server1, argv[1], MAX_FQDN_LEN);
     else if(strcmp(argv[0], "ntp_server2") == 0)
@@ -317,6 +321,7 @@ static void cmd_set(BaseSequentialStream *chp, int argc, char *argv[]) {
         strncpy(bigtime_config.ntp_server3, argv[1], MAX_FQDN_LEN);
     else if(strcmp(argv[0], "ntp_sync_time") == 0)
         bigtime_config.ntp_sync_time = atoi(argv[1]);
+
     else if(strcmp(argv[0], "disp_sync") == 0)
         bigtime_config.disp_sync = deformat_bool(chp, argv[1]);
     else if(strcmp(argv[0], "disp_auto_bst") == 0)

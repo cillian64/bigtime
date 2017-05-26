@@ -71,7 +71,7 @@ int main(void) {
 
     /* Initialise lwIP (automatically does DHCP if ip == 0.0.0.0) */
     lwipInit(&lwipopts);
-    netif_set_hostname(netif_default, "bigtime");
+    netif_set_hostname(netif_default, bigtime_config.net_hostname);
 
     // Initialise the state structure
     memset(&bigtime_state, 0, sizeof(bigtime_state));
