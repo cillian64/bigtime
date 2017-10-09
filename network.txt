@@ -1,0 +1,7 @@
+128.232.103.167    lt1-clock2.sys.cl.cam.ac.uk
+128.232.103.168    lt2-clock2.sys.cl.cam.ac.uk
+
+Network is 128.232.103.128/26
+netmask 255.255.255.192
+broadcast 128.232.103.191
+gateway 128.232.103.128
