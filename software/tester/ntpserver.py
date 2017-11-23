@@ -3,6 +3,7 @@ import time
 import select
 import ntplib
 import threading
+import sys
 
 
 class NTPServer:
@@ -87,11 +88,18 @@ class NTPServer:
                         sendPacket.tx_timestamp = (
                             ntplib.system_to_ntp_time(self._time))
                     sock.sendto(sendPacket.to_data(), addr)
+                    print("Served request from {}".format(addr))
 
 
 if __name__ == "__main__":
     ntp = NTPServer()
-    ntp.start(port=1337)
+    ntp.start(port=123)
+    if len(sys.argv) == 2:
+        ntp.set_time(time.mktime(time.strptime(
+            sys.argv[1], "%Y-%m-%d %H:%M:%S")))
+    elif len(sys.argv) != 1:
+        print("Usage: {} <timestr>".format(sys.argv[0]))
+        sys.exit(-1)
     print("NTP server running.")
     while True:
         try:

@@ -4,4 +4,13 @@
 Network is 128.232.103.128/26
 netmask 255.255.255.192
 broadcast 128.232.103.191
-gateway 128.232.103.128
+gateway 128.232.103.129
+
+ntp_server1 128.232.103.138 (ntp0.cl.cam.ac.uk)
+ntp_server2 128.232.0.9 (ntp1a.cl.cam.ac.uk)
+ntp_server3 128.232.0.8 (ntp1b.cl.cam.ac.uk)
+
+Sync time 0200 UTC
+
+dns1 128.232.1.1
+dns2 8.8.8.8
