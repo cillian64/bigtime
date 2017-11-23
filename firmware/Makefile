@@ -230,7 +230,7 @@ include $(RULESPATH)/rules.mk
 ##############################################################################
 # M3Debug flashing via GDB
 #
-BMP_PORT = $(wildcard /dev/cu.usbmodem*1)
+BMP_PORT = /dev/ttyACM0
 flash: build/$(PROJECT).elf $(OUTFILES)
 	arm-none-eabi-gdb --batch \
 		              -ex 'target extended-remote $(BMP_PORT)' \
