@@ -40,6 +40,41 @@ int32_t rtc_delta(RTCDateTime *rtcBegin, RTCDateTime *rtcEnd)
     return (int64_t)secsEnd - (int64_t)secsBegin;
 }
 
+// Date an RTCDateTime struct and populate the dayofweek field based on the
+// year, month, and day fields.  Implementation of Zeller's Algorithm.
+void fill_dow(RTCDateTime *datetime) {
+    // Convert years from ChibiOS's 1980 epoch to normal years:
+    int32_t year = 1980 + datetime->year;
+
+    // The algorithm uses a slightly weird month code starting at 3 = march and
+    // finishing at 14 = feb
+    int32_t month;
+    if (datetime->month <= 2) {
+        month = 12 + datetime->month;
+        year = year - 1;
+    } else {
+        month = datetime->month;
+        year = year;
+    }
+
+    // Split the adjusted year into first 2 and final 2 digits
+    const int32_t century = year / 100;
+    const int32_t year_in_century = year % 100;
+
+    int32_t dow = datetime->day;
+    dow += 13 * (month + 1) / 5;  // truncating divide to floor
+    dow += year_in_century;
+    dow += year_in_century / 4;  // truncating divide to floor
+    dow += century / 4;  // truncating divide to floor
+    dow += 5 * century;
+    dow = dow % 7;
+
+    // Zeller produces 0 = Saturday through 6 = Friday
+    // We use the ChibiOS/ISO convention of 1 = Monday to 7 = Sunday
+    // Convert from Zeller to ISO:
+    datetime->dayofweek = (dow + 5) % 7 + 1;
+}
+
 void rtc_from_ntp(RTCDateTime *rtcOut, uint64_t ntpIn)
 {
     uint32_t secs = ntpIn >> 32;
@@ -74,6 +109,9 @@ void rtc_from_ntp(RTCDateTime *rtcOut, uint64_t ntpIn)
     // Add on the fractional second from lowest 32-bits of ntp stamp
     ntpIn &= 0x0000ffff;
     rtcOut->millisecond += (ntpIn*1000) >> 32;
+
+    // Populate the day-of-week field
+    fill_dow(rtcOut);
 }
 
 uint64_t ntp_from_rtc(RTCDateTime *rtcDateTime)
